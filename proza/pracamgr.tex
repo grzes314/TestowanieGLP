@@ -1,0 +1,237 @@
+\documentclass[a4paper,11pt,oneside]{book}
+\usepackage[left=2.5cm,right=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+%\usepackage[polish]{babel}
+\usepackage{polski}
+\usepackage{amsmath, amsthm, amssymb}
+%\usepackage{changes}
+\usepackage{titlesec}
+\usepackage{color}
+\usepackage{array}
+
+%\addto\captionsenglish{
+%  \renewcommand\chaptername{}}
+\renewcommand\chaptername{Część}
+\titleformat{\chapter}[display]
+  {\normalfont\Large\filcenter\sffamily}
+  {\titlerule[1pt]%
+   \vspace{1pt}%
+   \titlerule
+   \vspace{1pc}%
+   \LARGE\MakeUppercase{\chaptertitlename} \Roman{chapter}
+  }
+  {1pc}
+  {\titlerule
+  \vspace{1pc}%
+  \Huge}
+%\renewcommand\thechapter{\Roman{chapter}}
+
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+\newcolumntype{N}{@{}m{0pt}@{}}
+
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\conv}{\rightarrow}
+\newcommand{\Conv}{\longrightarrow}
+\newcommand{\Sg}[1]{S^*_#1}
+\newcommand{\Slil}[1]{S^{lil}_#1}
+\newcommand{\norm}[2]{\mathcal{N}\left(#1, #2\right)}
+  
+\newtheorem{twier}{Twierdzenie}[chapter]
+\newtheorem{lemat}[twier]{Lemat}
+\newtheorem{fakt}[twier]{Fakt}
+
+\begin{document}
+
+\begin{center}
+\begin{Large}Grzegorz Łoś\end{Large}
+
+\begin{huge}\textbf{Testowanie generatorów liczb pseudolosowych} \end{huge}
+\end{center}
+
+
+\begin{minipage}{0.8\linewidth}
+\tableofcontents
+\end{minipage}
+
+\chapter*{Wprowadzenie}
+\addcontentsline{toc}{chapter}{\bfseries Wprowadzenie}
+Wiele współczesnych technologii opiera się na randomizacji. Przykładowo w finansach ważną rolę odgrywają metody Monte Carlo polegające na wielokrotnej symulacji rozwoju rynku. W informatyce losowość pojawia się na każdym kroku i często nie zdajemy sprawy jak bardzo jesteśmy od niej uzależnieni. Dziedziny takie jak na przykład metody optymalizacji nie miałyby bez niej racji bytu. Zrandomizowane algorytmy pojawiają się jednak nie tylko w wąskich, specjalistycznych zastosowaniach, ale są używane przez wszystkich programistów każdego dnia -- dość wspomnieć o algorytmie quicksort i tablicach haszujących.
+
+Podane wyżej przykłady mają pewną wspólną cechę: wprawdzie wszystkie korzystają z generatorów liczb pseudolosowych (GLP), ale jego drobne wady nie rujnują wyniku. Są jednak dziedziny, w których jakość GLP ma zasadnicze znaczenie. Dobrym przykładem jest kryptografia. Zauważalne odstępstwa od losowości mogą istotnie zwiększyć szanse złamania protokołu kryptograficznego, odkrycia klucza prywatnego, itp. Wynika stąd potrzeba zidentyfikowania tych GLP, na których można polegać.
+
+Rozstrzygnięcie czy dany GLP jest wystarczająco solidny sprowadza się do odpowiedzi na pytanie czy jego wyjście jest nieodróżnialne od ciągu prawdziwie losowego. W niniejszej pracy proponujemy metodę testowania generatorów opartą o prawo arcusa sinusa.
+
+{\bigskip \color{red} \LARGE{TODO!} Rozdmuchać wstęp}
+
+
+\chapter{Błądzenie przypadkowe}
+Wyjście generowane przez GLP zawsze można traktować jako ciąg zerojedynkowy. Dlatego ważnym pojęciem będzie dla nas ciąg prób Bernoulliego $(B_i)_{i \in \mathbb{N}}$. Dla ustalonego $p \in [0,1]$ oznaczamy w ten sposób ciąg niezależnych zmiennych losowych o jednakowym rozkładzie, taki że
+\[ \Prob(B_1 = 1) = p = 1 - \Prob(B_1 = 0). \]
+Możemy postrzegać $i$-ty bit wygenerowany przez GLP jako wyniki $i$-tej próby Bernoulliego. Dobry generator powinien z takim samym prawdopodobieństwem losować 0 oraz 1, dlatego ograniczymy się do przypadku $p = \frac{1}{2}$.
+
+Często będzie nam wygodniej posługiwać się ciągiem prób $(X_i)_{i \in \mathbb{N}}$, który przyjmuje wartości -1 zamiast 0, czyli
+\[ X_i \stackrel{D}{=} 2 B_i -1. \]
+Ponadto oznaczmy
+\[ S_n = \sum_{i=1}^{n} X_i. \]
+Tak zdefiniowany proces $(S_i)_{i \in \mathbb{N}}$ jest nazywany błądzeniem przypadkowym. Ciąg ten w każdym kolejnym kroku zmienia swoją wartość o 1 lub -1. Czasem wygodnie jest go postrzegać jako wynik następującej gry. Dwóch graczy rzuca idealną monetą. Jeśli wypada orzeł, to pierwszy gracz otrzymuję złotówkę od drugiego, w przeciwnym przypadku pierwszy płaci złotówkę drugiemu. Proces $S$ przedstawia zysk ustalonego gracza.
+
+Sporo miejsca w rachunku prawdopodobieństwa poświęcono badaniu własności błądzenia przypadkowego, z których dwie omawiamy poniżej. Ideą testów, które przedstawiamy w części \ref{czescTest} jest sprawdzanie czy wyjście GLP zachowuje się tak jak to wynika z praw rachunku prawdopodobieństwa.
+
+\begin{figure}
+ \caption{Przykładowe trajektorie procesu $S$.}
+ \label{fig:bladzenie}
+\end{figure}
+
+\section{Prawo iterowanego logarytmu}
+Jest jasne, że $|S_n| \leq n$. Można się jednak domyślać, choćby na podstawie rysunku \ref{fig:bladzenie}, że duże wartości $|S_n|$ są jednak bardzo mało prawdopodobne i w praktyce z dużym prawdopodobieństwem wartości $S_n$ znajdą się w znacznie węższym przedziale niż $[-n, n]$. Słabe i mocne prawo wielkich liczb mówią nam, że
+\[\frac{S_n}{n} \stackrel{\Prob}{\rightarrow} 0 \hbox{, a nawet } \frac{S_n}{n} \stackrel{p.n.}{\rightarrow} 0.\] Jest więc jasne, że odchylenia procesu $S$ od zera rosną znacznie wolniej niż liniowo. Z drugiej strony centralne twierdzenie graniczne (CTG) mówi nam, że $\frac{S_n}{\sqrt{n}} \stackrel{D}{\rightarrow} \norm{0}{1}$
+co jest w pewnym sensie oszacowaniem fluktuacji $S_n$ od dołu -- będą one wychodzić poza przedział $[-\sqrt{n}, \sqrt{n}]$, mamy bowiem
+\begin{fakt}
+\label{fakt:bladzenie_clt}
+ Błądzenie przypadkowe $S_n$  z prawdopodobieństwem 1 spełnia \[ \limsup_{n \conv \infty} \frac{S_n}{\sqrt{n}} = \infty. \]
+\end{fakt}
+\begin{proof}
+ Z prawa 0-1 Kołmogorowa wynika, że dla dowolnego ciągu zmiennych losowych $(X_i)$ i.i.d., zdarzenia typu $\left\{ \limsup\limits_{n \conv \infty} X_n > M \right\}$ mają prawdopodobieństwo równe 0 lub 1 (patrz \cite{jak-szt}, \S7.2, zadanie 1). Weźmy dowolnie duże $M$. Mamy
+ \begin{align*}
+  \Prob\left(\limsup_{n \conv \infty} \frac{S_n}{\sqrt{n}} > M \right)
+  &= \Prob\left(\bigcap_{n=1}^\infty \bigcup_{k \geq n} \left\{ \frac{S_k}{\sqrt{k}} > M \right\} \right)\\
+  &= \lim_{n \conv \infty} \Prob\left( \bigcup_{k \geq n} \left\{ \frac{S_k}{\sqrt{k}} > M \right\} \right) \\
+  &\geq \lim_{n \conv \infty} \Prob\left(\frac{S_n}{\sqrt{n}} > M \right) \\
+  &= 1 - \Phi(M) > 0.
+ \end{align*}
+ Czyli $\Prob\left(\limsup\limits_{n \conv \infty} \frac{S_n}{\sqrt{n}} > M \right) = 1$, co wobec dowolności $M$ oznacza, że \[ \Prob\left(\limsup_{n \conv \infty} \frac{S_n}{\sqrt{n}} = \infty \right) = 1. \]
+\end{proof}
+
+Okazuje się, że fluktuacje $S$ można oszacować precyzyjniej, mówi o tym
+\begin{twier}[\textbf{Prawo iterowanego logarytmu}]
+\label{tw:pil}
+ Błądzenie przypadkowe $S_n$  z prawdopodobieństwem 1 spełnia \[ \limsup_{n \conv \infty} \frac{S_n}{ \sqrt{2 n \log \log n} } = 1. \]
+\end{twier}
+\noindent Dowód można znaleźć w \cite{feller}, rozdział VIII, \S5. Oczywiście ze względu na symetrię mamy analogiczne własności do Faktu \ref{fakt:bladzenie_clt} i Twierdzenia \ref{tw:pil} dla $\liminf$.
+
+Jak widać $n$ było zbyt dużym dzielnikiem, a $\sqrt{n}$ zbyt małym -- odchylenia $S_n$ od zera rosną proporcjonalnie do $\sqrt{n \log \log n}$. Można zatem powiedzieć, że prawo iterowanego logarytmu~(PIL) ``działa pomiędzy'' prawem wielkich liczb i centralnym twierdzeniem granicznym. Te trzy twierdzenia dają nam własności błądzenia przypadkowego, które zebrano w Tabeli \ref{tab:wlasnosci_bladzenia}.
+
+\begin{table}[ht]
+\centering
+ \caption{Wnioski dotyczące błądzenia przypadkowego wynikające ze znanych twierdzeń.}
+ \label{tab:wlasnosci_bladzenia}
+\begin{tabular} {||c | M{2.8cm} | M{2.8cm} | M{4cm} | M{4cm} || N}  
+ \hline 
+   & Zbieżność według prawdop. & Zbieżność prawie na pewno & Wartość limes superior prawie na pewno & Wartość limes inferior prawie na pewno  \\ \hline 
+   PWL & $ \frac{S_n}{n} \stackrel{\Prob}{\Conv} 0 $ & $ \frac{S_n}{n} \stackrel{p.n.}{\Conv} 0 $ & $\limsup\limits_{n \conv \infty} \frac{S_n}{n} = 0 $ &  $\liminf\limits_{n \conv \infty} \frac{S_n}{n} = 0 $ &\\[1cm] \hline
+   PIL & $ \frac{S_n}{\sqrt{2 n \log \log n}} \stackrel{\Prob}{\Conv} 0 $ & $ \frac{S_n}{\sqrt{2 n \log \log n}} \stackrel{p.n.}{\nrightarrow} 0 $ & $\limsup\limits_{n \conv \infty} \frac{S_n}{\sqrt{2n \log \log n}} = 1 $ &  $\liminf\limits_{n \conv \infty} \frac{S_n}{\sqrt{2n \log \log n}} = -1 $ &\\[1cm] \hline
+   CTG & $ \forall x\ \frac{S_n}{\sqrt{n}} \stackrel{\Prob}{\nrightarrow} x $ &  $ \forall x\ \frac{S_n}{\sqrt{n}} \stackrel{p.n.}{\nrightarrow} x $ & $\limsup\limits_{n \conv \infty} \frac{S_n}{\sqrt{n}} = \infty $ &  $\liminf\limits_{n \conv \infty} \frac{S_n}{\sqrt{n}} = -\infty $ &\\[1cm] \hline
+\end{tabular}  
+\end{table}
+
+Choć nie będzie przydatna w dalszej części pracy, jeszcze jedna ciekawa własność narzuca się by o niej wspomnieć. Niech $\Slil{n} = \frac{S_n}{\sqrt{2n \log \log n}}$. Z PIL wynika, że wielkość $\Slil{n}$ nie zbiega punktowo do żadnej stałej. Zachodzi natomiast zbieżność według prawdopodobieństwa. Ustalmy więc dowolnie małe $\varepsilon > 0$ i zastanówmy się jak często $\Slil{n}$ opuści epsilonowy pasek wokół zera. Możemy przyjąć $p < 1$ dowolnie bliskie jedności, a mimo to dla prawie wszystkich $n$ możemy powiedzieć, że z prawdopodobieństwem $p$ wielkość $\Slil{n}$ nie wyjdzie poza przedział $(-\varepsilon, \varepsilon)$. Tymczasem PIL równocześnie mówi nam, że ten epsilonowy pasek opuścimy nieskończenie wiele razy. Ta niesamowita, pozorna sprzeczność pokazuje jak bardzo nasza intuicja zawodzi, gdy myślimy o zjawiskach zachodzących w nieskończoności.
+
+\section{Prawo arcusa sinusa}
+Kolejna własność błądzenia przypadkowego, którą postaramy się wykorzystać do testowania GLP jest znana jako prawo arcusa sinusa. Odpowiada ono na pytanie przez jaką frakcję czasu ustalony gracz będzie na prowadzeniu. Spodziewalibyśmy się, że w przypadku bardzo długiej gry, obaj gracze będą na prowadzeniu przez mniej więcej tyle samo czasu. Jednak pokażemy, że również w tym przypadku nasza intuicja płata nam figla.
+
+Powiemy, że bilans gry w $k$-tym kroku ($k \geq 1$) był dodatni, jeżeli $S_k > 0$ lub $S_{k-1}~>~0$. Geometrycznie oznacza to, że odcinek wykresu błądzenia losowego przebiegający pomiędzy odciętymi $k-1$ oraz $k$, musi znajdować się nad osią x-ów.
+
+Wprowadźmy następujące oznaczenia:
+\begin{itemize}
+  \setlength\itemsep{1pt}
+ \item $U_n$ -- zdarzenie, że w $n$-tym kroku nastąpił powrót do zera,
+ \item $F_n$ -- zdarzenie, ze w $n$-tym kroku nastąpił \emph{pierwszy} powrót do zera,
+ \item $u_n = \Prob(U_n)$, $f_n = \Prob(F_n)$.
+ \item $p_{k,n}$ -- prawdopodobieństwo, że przez $k$ spośród pierwszych $n$ kroków gry, bilans był dodatni.
+\end{itemize}
+Łatwo zauważyć, że powrót do zera może nastąpić tylko w parzystym kroku, zatem
+\[ \forall n \in \mathbb{N}\ \ u_{2n-1} = f_{2n-1} = 0, \]
+\[ \forall k,n \in \mathbb{N}\ \ p_{2k-1, 2n} = 0, \]
+Ponadto przyjmujemy, że $p_{0,0} = u_0 = 1$. Zachodzi również
+
+\begin{lemat}
+ \label{lem:uf_val}
+ Dla każdego $n \in \mathbb{N}$ spełnione są poniższe tożsamości:
+ \begin{align}
+  u_{2n} &= \binom{2n}{n}2^{-2n}   \label{eq:u_val}\\
+  u_{2n} &= \sum_{r=1}^n f_{2r} u_{2n-2r}   \label{eq:u_val_cond}\\
+  f_{2n} &= \frac{1}{2n} u_{2n-2} \label{eq:f_val}\\
+  f_{2n} &= u_{2n-2} - u_{2n} \label{eq:f_val2}
+ \end{align}
+\end{lemat}
+\begin{proof}
+ Wzór (\ref{eq:u_val}) wynika stąd, że wszystkich dróg długości $2n$ jest $2^{2n}$, a drogi wracające na końcu do zera odpowiadają ustawieniu $n$ orłów i $n$ reszek na $2n$ miejscach -- co robimy na $\binom{2n}{n}$ sposobów.
+ 
+ Tożsamość (\ref{eq:u_val_cond}) wynika wprost ze wzoru na prawdopodobieństwo całkowite:
+ \[ u_{2n} = \Prob(U_{2n}) = \sum_{r=1}^n \Prob(U_{2n}|F_{2r}) \Prob(F_{2r}) = \sum_{r=1}^n \Prob(U_{2n-2r}) \Prob(F_{2r}) = \sum_{r=1}^n u_{2n-2r}f_{2r}  \]
+ Formuła (\ref{eq:f_val2}) to prosta konsekwencja (\ref{eq:u_val}) i (\ref{eq:f_val}), bo
+ \begin{equation*}
+ \begin{split}
+    u_{2n-2} - u_{2n} &= u_{2n-2} - \binom{2n}{n}2^{-2n} =  u_{2n-2} - \binom{2n-2}{n-1} \frac{(2n-1)2n}{4n^2}2^{-(2n-2)} = \\
+    &= u_{2n-2}\left(1 - \frac{(2n-1)}{2n} \right) = \frac{1}{2n} u_{2n-2} =  f_{2n}.
+ \end{split}
+ \end{equation*}
+\end{proof}
+
+Tożsamości z Lematu \ref{lem:uf_val} intensywnie wykorzystujemy w dowodzie następującego, kluczowego faktu.
+\begin{twier}
+ \label{twier:disc_asine_law}
+ Dla wszystkich $k, n \in \mathbb{N}$
+ \begin{equation}
+  p_{2k,2n} = u_{2k} u_{2n-2k} = \binom{2k}{k}\binom{2n-2k}{n-k}2^{-2n} \label{eq:disc_asine_law}
+ \end{equation}
+\end{twier}
+\begin{proof}
+Niech $q_{2n}$ oznacza prawdopodobieństwo, że w pierwszych $2n$ krokach gry ani razu nie doszło do remisu. Wzór (\ref{eq:f_val2}) daje nam
+\[ q_{2n} = 1 - f_2 - f_4 - \cdots - f_{2n} = 1 - (1- u_2) - (u_2 - u_4) - \cdots - (u_{2n-2} - u_{2n}) = u_{2n}. \]
+Udowodnimy teraz indukcyjnie, że
+\begin{equation}
+ p_{0,2n} = u_{2n}. \label{eq:disc_asine_law_k0}
+\end{equation}
+Łatwo sprawdzić, że $p_{0,2} = \frac{1}{2} = u_2$. Załóżmy, że $p_{0,2\tilde{n}} = u_{2\tilde{n}}$ dla $\tilde{n} < n$.  Zauważmy, że aby spędzić całą grę na minusie, musieliśmy w pierwszym kroku pójść w dół, co dzieje się z prawdopodobieństwem $\frac{1}{2}$. Dalej musiała zajść jedna z dwóch możliwości. Z prawdopodobieństwem $q_{2n}$ mogliśmy ani razu nie wrócić do zera. Mogło się też zdarzyć, że dla pewnego $r$ wróciliśmy do zera po raz pierwszy w kroku $2r$ (z prawdopodobieństwem $f_{2r}$), ale resztę czasu mimo tego spędziliśmy ``pod kreską'' (z prawdopodobieństwem $p_{0,2n-2r}$). Te rozważania, założenie indukcyjne oraz wzór (\ref{eq:u_val_cond}) dają
+\begin{equation*}
+ \begin{split}
+  p_{0,2n} &= \frac{1}{2} \left( q_{2n} + \sum_{r=1}^n f_{2r} p_{0,2n-2r} \right) = \frac{1}{2} \left( u_{2n} + \sum_{r=1}^n f_{2r} u_{2n-2r}  \right) \\
+  &= \frac{1}{2} \left( u_{2n} + u_{2n}  \right) = u_{2n},
+ \end{split}
+\end{equation*}
+co chcieliśmy pokazać.
+
+Teraz uogólniamy ten wynik postępując również indukcyjnie. Twierdzenie \ref{twier:disc_asine_law} jest w oczywisty sposób prawdziwe dla $n=0$. Załóżmy teraz, że dla wszystkich $\tilde{n} < n$ zachodzi $\forall 0 \leq k \leq \tilde{n}\ \ p_{2k,2\tilde{n}} = u_{2k} u_{2\tilde{n}-2k}$ i pokażemy, że $\forall 0 \leq k \leq n\ \ p_{2k,2n} = u_{2k} u_{2n-2k}$. 
+Wiemy już, że teza jest prawdziwa dla $k = 0$ oraz $k = n$, gdyż
+\[  p_{2n,2n} = p_{0,2n} = u_{2n} = u_{2n}u_0. \]
+Dlatego weźmy dowolne $k$, takie że $0 < k < n$. Aby zaszło rozważane zdarzenie, błądzenie musi przechodzić przez 0. Załóżmy, że pierwszy raz dzieje się to w pewnym punkcie $2r$. Jeżeli w pierwszym kroku poszliśmy w górę (co dzieje się z prawdopodobieństwem $\frac{1}{2}$), to po powrocie musimy spędzić ``nad kreską'' jeszcze $2k-2r$ kroków. W przeciwnym razie po powrocie ciągle musimy być na plusie przez $2k$ kroków. Stąd
+\begin{equation*}
+ \begin{split}
+  p_{2k,2n} &= \frac{1}{2} \left( \sum_{r=1}^k f_{2r} p_{2k-2r,2n-2r} + \sum_{r=1}^{n-k} f_{2r} p_{2k, 2n-2r} \right) = (\bigstar)
+ \end{split}
+\end{equation*}
+\noindent Z założenia indukcyjnego
+\[ p_{2k-2r,2n-2r} = u_{2k-2r}u_{2n-2r - (2k-2r)} = u_{2k-2r}u_{2n-2k} \]
+oraz
+\[ p_{2k,2n-2r} = u_{2k}u_{2n-2r-2k}, \]
+zatem
+\begin{equation*}
+ \begin{split}
+  (\bigstar) &= \frac{1}{2} \left( \sum_{r=1}^k f_{2r} u_{2k-2r}u_{2n-2k} + \sum_{r=1}^{n-k} f_{2r} u_{2k}u_{2n-2r-2k} \right) \\
+             &= \frac{1}{2} \left( u_{2n-2k}\sum_{r=1}^k f_{2r} u_{2k-2r} + u_{2k}\sum_{r=1}^{n-k} f_{2r} u_{2n-2r-2k} \right) \\
+             &= \frac{1}{2} \left( u_{2n-2k}u_{2k} + u_{2k} u_{2n-2k} \right) = u_{2k} u_{2n-2k},
+ \end{split}
+\end{equation*}
+co było do okazania. Korzystając z (\ref{eq:u_val}) otrzymujemy tezę.
+\end{proof}
+
+
+Ludzka intuicja silnie podpowiada, że w grze z symetryczną monetą, każdy z graczy powinien być na plusie przez około połowę czasu. Wydaje się to logiczne -- wiadomo, że liczba powrotów błądzenia przypadkowego do zera jest nieskończona w nieskończenie długiej grze. Zatem obaj gracze mają mniej więcej tyle samo fal kiedy są na plusie. Ponadto średnia długość dodatniej fali powinna być dla obu graczy zbliżona. Co z kolei prowadzi do wniosku, że obaj powinni być na prowadzeniu przez podobną frakcję czasu. Gdzie tkwi błąd w tym rozumowaniu? Otóż MPWL dotyczy zmiennych o skończonej wartości oczekiwanej. Tymczasem oczekiwany czas powrotu do zera w błądzeniu przypadkowym okazuje się być nieskończony, co kompletnie zmyla nasze intuicje.
+
+\chapter{Testowanie generatorów liczb pseudolosowych}
+\label{czescTest}
+
+\begin{thebibliography}{99}
+ \bibitem{feller}
+    W. Feller, \emph{Wstęp do rachunku prawdopodobieństwa}, PWN, Warszawa, Wydanie piąte, 1987
+ \bibitem{wang-nic}
+    Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, 2014
+ \bibitem{jak-szt}
+    J. Jakubowski, R. Sztencel, \emph{Wstęp do teorii prawdopodobieństwa}, Script, Warszawa, Wydanie IV, 2010
+
+\end{thebibliography}
+
+
+
+\end{document}
