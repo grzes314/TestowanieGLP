@@ -3,11 +3,12 @@
 \usepackage[utf8]{inputenc}
 %\usepackage[polish]{babel}
 \usepackage{polski}
-\usepackage{amsmath, amsthm, amssymb}
-%\usepackage{changes}
-\usepackage{titlesec}
+\usepackage{amsmath, amsthm, amssymb} %Rozne matematyczne symbole
+\usepackage{graphicx} %Zalaczanie obrazkow
+\usepackage{titlesec} 
 \usepackage{color}
 \usepackage{array}
+\usepackage{wrapfig} % Opływające obrazki
 
 %\addto\captionsenglish{
 %  \renewcommand\chaptername{}}
@@ -55,16 +56,26 @@
 
 \chapter*{Wprowadzenie}
 \addcontentsline{toc}{chapter}{\bfseries Wprowadzenie}
-Wiele współczesnych technologii opiera się na randomizacji. Przykładowo w finansach ważną rolę odgrywają metody Monte Carlo polegające na wielokrotnej symulacji rozwoju rynku. W informatyce losowość pojawia się na każdym kroku i często nie zdajemy sprawy jak bardzo jesteśmy od niej uzależnieni. Dziedziny takie jak na przykład metody optymalizacji nie miałyby bez niej racji bytu. Zrandomizowane algorytmy pojawiają się jednak nie tylko w wąskich, specjalistycznych zastosowaniach, ale są używane przez wszystkich programistów każdego dnia -- dość wspomnieć o algorytmie quicksort i tablicach haszujących.
+Wiele współczesnych technologii opiera się na randomizacji. W informatyce losowość pojawia się na każdym kroku i często nie zdajemy sprawy jak bardzo jesteśmy od niej uzależnieni. Programiści korzystają z niej na co dzień, często zupełnie nieświadomie, na przykład używając bibliotecznych implementacji algorytmu quicksort lub tablic haszujących. Randomizacja jest niezbędnym elementem w wielu innych specjalistycznych dziedzinach. Przykładowo w finansach ważną rolę odgrywają metody Monte Carlo polegające na wielokrotnej symulacji rozwoju rynku. Metody optymalizacji oparte o metaheurystyki lub algorytmy ewolucyjne nie miałyby bez losowości racji bytu.
 
-Podane wyżej przykłady mają pewną wspólną cechę: wprawdzie wszystkie korzystają z generatorów liczb pseudolosowych (GLP), ale jego drobne wady nie rujnują wyniku. Są jednak dziedziny, w których jakość GLP ma zasadnicze znaczenie. Dobrym przykładem jest kryptografia. Zauważalne odstępstwa od losowości mogą istotnie zwiększyć szanse złamania protokołu kryptograficznego, odkrycia klucza prywatnego, itp. Wynika stąd potrzeba zidentyfikowania tych GLP, na których można polegać.
+Podane wyżej przykłady mają pewną wspólną cechę: drobne wady generatora liczb pseudolosowych (GLP), na których oparte są wspomniane metody, mogą obniżyć efektywność działania lub dokładność wyników, ale nie rujnują algorytmów całkowicie. Są jednak dziedziny, w których jakość GLP ma zasadnicze znaczenie. Dobrym przykładem jest kryptografia. Zauważalne odstępstwa od losowości mogą istotnie zwiększyć szanse złamania protokołu kryptograficznego, odkrycia klucza prywatnego, itp. Wynika stąd potrzeba zidentyfikowania tych GLP, na których można polegać.
 
-Rozstrzygnięcie czy dany GLP jest wystarczająco solidny sprowadza się do odpowiedzi na pytanie czy jego wyjście jest nieodróżnialne od ciągu prawdziwie losowego. W niniejszej pracy proponujemy metodę testowania generatorów opartą o prawo arcusa sinusa.
+Wyjście GLP jest po prostu ciągiem binarnych danych. Rozstrzygnięcie czy dany GLP jest wystarczająco solidny sprowadza się do odpowiedzi na pytanie czy jego wyjście jest nieodróżnialne od ciągu prawdziwie losowego. Interpretując wygenerowane bity jako +1 oraz -1, możemy łatwo zobaczyć, że wyjście GLP odpowiada realizacji błądzenia przypadkowego. Ten proces stochastyczny jest dobrze zbadany i opisany w literaturze (np. w \cite{feller}). Znamy wiele jego własności. Testowanie GLP polega na sprawdzeniu czy jego wyjście również je posiada.
+
+W części \ref{czesc:bladzenie} opisujemy te własności błądzenia przypadkowego, które przydadzą się w dalszej części pracy. Autorzy \cite{wang-nic} zauważyli użyteczność prawa iterowanego logarytmu do testowania generatorów. W niniejszej pracy proponujemy metodę testowania generatorów opartą o prawo arcusa sinusa.
+
+Część \ref{czesc:test} opisujemy dokładniej jak wykorzystać przytoczone prawa do testowania GLP. Postępujemy nieco inaczej niż w statystyce matematycznej, choć idea jest podobna. Uruchamiamy GLP $m$ razy (każdorazowo z innym ziarnem!). Na podstawie każdego ciągu zerojedynkowego otrzymanego z GLP (lub patrząc inaczej: na podstawie każdej realizacji błądzenia przypadkowego) obliczamy wartość pewnej funkcji. Znamy teoretyczny rozkład tej wartości i możemy obliczyć jego odległość od rozkładu otrzymanego empirycznie. Jeśli ta odległość jest duża, to możemy powiedzieć, że GLP jest niskiej jakości, w przeciwnym razie nie ma podstaw by go zdyskredytować.
+
+Wyniki testów kilku znanych GLP przedstawione są w części \ref{czesc:wyniki}
 
 {\bigskip \color{red} \LARGE{TODO!} Rozdmuchać wstęp}
 
 
 \chapter{Błądzenie przypadkowe}
+\label{czesc:bladzenie}
+
+Jak napisaliśmy we wprowadzeniu, własności błądzenia przypadkowego (inaczej: losowego) będą kluczowe dla testowania GLP. Zebrane w tej części wiadomości opracowane są na podstawie \cite{feller}. Większość oznaczeń jest również wzorowane na tej książce.
+
 Wyjście generowane przez GLP zawsze można traktować jako ciąg zerojedynkowy. Dlatego ważnym pojęciem będzie dla nas ciąg prób Bernoulliego $(B_i)_{i \in \mathbb{N}}$. Dla ustalonego $p \in [0,1]$ oznaczamy w ten sposób ciąg niezależnych zmiennych losowych o jednakowym rozkładzie, taki że
 \[ \Prob(B_1 = 1) = p = 1 - \Prob(B_1 = 0). \]
 Możemy postrzegać $i$-ty bit wygenerowany przez GLP jako wyniki $i$-tej próby Bernoulliego. Dobry generator powinien z takim samym prawdopodobieństwem losować 0 oraz 1, dlatego ograniczymy się do przypadku $p = \frac{1}{2}$.
@@ -75,12 +86,15 @@ Ponadto oznaczmy
 \[ S_n = \sum_{i=1}^{n} X_i. \]
 Tak zdefiniowany proces $(S_i)_{i \in \mathbb{N}}$ jest nazywany błądzeniem przypadkowym. Ciąg ten w każdym kolejnym kroku zmienia swoją wartość o 1 lub -1. Czasem wygodnie jest go postrzegać jako wynik następującej gry. Dwóch graczy rzuca idealną monetą. Jeśli wypada orzeł, to pierwszy gracz otrzymuję złotówkę od drugiego, w przeciwnym przypadku pierwszy płaci złotówkę drugiemu. Proces $S$ przedstawia zysk ustalonego gracza.
 
-Sporo miejsca w rachunku prawdopodobieństwa poświęcono badaniu własności błądzenia przypadkowego, z których dwie omawiamy poniżej. Ideą testów, które przedstawiamy w części \ref{czescTest} jest sprawdzanie czy wyjście GLP zachowuje się tak jak to wynika z praw rachunku prawdopodobieństwa.
-
-\begin{figure}
+\begin{figure}[ht]
+ \centering
+ \includegraphics[scale=0.4]{obrazki/rw.pdf}
  \caption{Przykładowe trajektorie procesu $S$.}
  \label{fig:bladzenie}
 \end{figure}
+
+Sporo miejsca w rachunku prawdopodobieństwa poświęcono badaniu własności błądzenia przypadkowego, z których dwie omawiamy poniżej. Ideą testów, które przedstawiamy w części~\ref{czesc:test} jest sprawdzanie czy wyjście GLP zachowuje się tak jak to wynika z praw rachunku prawdopodobieństwa.
+
 
 \section{Prawo iterowanego logarytmu}
 Jest jasne, że $|S_n| \leq n$. Można się jednak domyślać, choćby na podstawie rysunku \ref{fig:bladzenie}, że duże wartości $|S_n|$ są jednak bardzo mało prawdopodobne i w praktyce z dużym prawdopodobieństwem wartości $S_n$ znajdą się w znacznie węższym przedziale niż $[-n, n]$. Słabe i mocne prawo wielkich liczb mówią nam, że
@@ -124,6 +138,15 @@ Jak widać $n$ było zbyt dużym dzielnikiem, a $\sqrt{n}$ zbyt małym -- odchyl
 \end{tabular}  
 \end{table}
 
+Przyjrzyjmy się Rysunkowi \ref{fig:itlog}. Widać, że funkcja $\sqrt{2 n \log \log n}$ z grubsza odpowiada fluktuacjom procesu $S_n$. Można jednak zauważyć, że kilka trajektorii po około miliardzie kroków ciągle nie mieści się w przedziale $[-\sqrt{2 n \log \log n}, \sqrt{2 n \log \log n}]$. Prawo iterowanego logarytmu mówimy nam, że dla odpowiednio dużych $n$ trajektorie nie będą wykraczać poza ten zakres z prawdopodobieństwem 1. Wniosek jaki możemy wyciągnąć z tego obrazka jest taki, że mowa tu o naprawdę olbrzymich wartościach $n$.
+
+\begin{figure}[!ht]
+ \centering
+ \includegraphics[scale=0.4]{obrazki/itlog.pdf}
+ \caption{Ilustracja prawa iterowanego logarytmu. Przedstawia ona 500 trajektorii błądzenia losowego, długości $2^{30}$. Im ciemniejszy jest obszar wykresu, tym większe jest w nim zagęszczenie trajektorii. Niebieska krzywa to wykresy funkcji $\sqrt{x}$ oraz $-\sqrt{x}$, zaś czerwona funkcji $\sqrt{2 x \log \log x}$ oraz $-\sqrt{2 x \log \log x}$.}
+ \label{fig:itlog}
+\end{figure}
+
 Choć nie będzie przydatna w dalszej części pracy, jeszcze jedna ciekawa własność narzuca się by o niej wspomnieć. Niech $\Slil{n} = \frac{S_n}{\sqrt{2n \log \log n}}$. Z PIL wynika, że wielkość $\Slil{n}$ nie zbiega punktowo do żadnej stałej. Zachodzi natomiast zbieżność według prawdopodobieństwa. Ustalmy więc dowolnie małe $\varepsilon > 0$ i zastanówmy się jak często $\Slil{n}$ opuści epsilonowy pasek wokół zera. Możemy przyjąć $p < 1$ dowolnie bliskie jedności, a mimo to dla prawie wszystkich $n$ możemy powiedzieć, że z prawdopodobieństwem $p$ wielkość $\Slil{n}$ nie wyjdzie poza przedział $(-\varepsilon, \varepsilon)$. Tymczasem PIL równocześnie mówi nam, że ten epsilonowy pasek opuścimy nieskończenie wiele razy. Ta niesamowita, pozorna sprzeczność pokazuje jak bardzo nasza intuicja zawodzi, gdy myślimy o zjawiskach zachodzących w nieskończoności.
 
 \section{Prawo arcusa sinusa}
@@ -159,6 +182,41 @@ Ponadto przyjmujemy, że $p_{0,0} = u_0 = 1$. Zachodzi również
  
  Tożsamość (\ref{eq:u_val_cond}) wynika wprost ze wzoru na prawdopodobieństwo całkowite:
  \[ u_{2n} = \Prob(U_{2n}) = \sum_{r=1}^n \Prob(U_{2n}|F_{2r}) \Prob(F_{2r}) = \sum_{r=1}^n \Prob(U_{2n-2r}) \Prob(F_{2r}) = \sum_{r=1}^n u_{2n-2r}f_{2r}  \]
+ 
+ Dla dowodu (\ref{eq:f_val}) wprowadźmy dodatkowe oznaczenia:
+ 
+\begin{itemize}
+  \setlength\itemsep{1pt}
+  \item $N_n(a,b)$ -- liczba ścieżek od stanu $a$ do stanu $b$ w $n$ krokach,
+  \item $N_n^{\neq 0}(a,b)$ -- jak $N_n(a,b)$, ale ścieżki nie mogą dotykać 0 (za wyjątkiem co najwyżej końców),
+  \item $N_n^{=0}(a,b)$ -- jak $N_n(a,b)$, ale ścieżki muszą dotknąć lub przeciąć 0.
+\end{itemize}
+Łatwo zauważyć, że $N_n(a,b) = \binom{n}{(n+b-a)/2}$ oraz $N_n(a,b) = N_n^{\neq 0}(a,b) + N_n^{= 0}(a,b)$. Wartość $f_{2n}$ to oczywiście stosunek $N_{2n}^{\neq 0}(0,0)$ do liczby wszystkich ścieżek od stanu 0 do stanu 0 w $2n$ krokach. Dlatego liczymy
+\[ N_{2n}^{\neq 0}(0,0) = N_{2n-1}^{\neq 0}(1,0) + N_{2n-1}^{\neq 0}(-1,0) = 2N_{2n-1}^{\neq 0}(1,0)= 2N_{2n-2}^{\neq 0}(1,1) \]
+Patrząc na Rysunek \ref{fig:forlemma} łatwo zauważyć, że $N_{2n-2}^{=0}(1,1) = N_{2n-2}(-1,1)$. 
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=0.5]{obrazki/forlemma.pdf}
+ \caption{Ilustracja faktu $N_n^{=0}(1,1) = N_n(-1,1)$. Łatwo zobaczyć jednoznaczną odpowiedniość między oboma rodzajami ścieżek. Aż do momentu pierwszego powrotu do zera ścieżka jednego rodzaju jest odbiciem symetrycznym względem osi odciętych ścieżki drugiego rodzaju, zaś dalej ścieżki się pokrywają.}
+ \label{fig:forlemma}
+\end{figure}
+Zatem
+\begin{equation*}
+ \begin{split}
+   N_{2n-2}^{\neq 0}(1,1)
+   &= N_{2n-2}(1,1) - N_{2n-2}^{=0}(1,1) =  N_{2n-2}(1,1) - N_{2n-2}(-1,1) \\
+   &= \binom{2n-2}{n-1} - \binom{2n-2}{n} = \binom{2n-2}{n-1} - \frac{n-1}{n}\binom{2n-2}{n-1} \\
+   &= \frac{1}{n} \binom{2n-2}{n-1} = \frac{2^{2n-2}}{n} u_{2n-2}
+ \end{split}
+\end{equation*}
+Ostatecznie
+
+\begin{equation*}
+ \begin{split}
+   f_{2n} &= \frac{N_{2n}^{\neq 0}(0,0)}{2^{2n}} = \frac{2N_{2n-2}^{\neq 0}(1,1)}{2^{2n}} = \frac{\frac{2^{2n-1}}{n} u_{2n-2}}{2^{2n}} = \frac{u_{2n-2}}{2n}
+ \end{split}
+\end{equation*}
+
  Formuła (\ref{eq:f_val2}) to prosta konsekwencja (\ref{eq:u_val}) i (\ref{eq:f_val}), bo
  \begin{equation*}
  \begin{split}
@@ -195,7 +253,7 @@ co chcieliśmy pokazać.
 Teraz uogólniamy ten wynik postępując również indukcyjnie. Twierdzenie \ref{twier:disc_asine_law} jest w oczywisty sposób prawdziwe dla $n=0$. Załóżmy teraz, że dla wszystkich $\tilde{n} < n$ zachodzi $\forall 0 \leq k \leq \tilde{n}\ \ p_{2k,2\tilde{n}} = u_{2k} u_{2\tilde{n}-2k}$ i pokażemy, że $\forall 0 \leq k \leq n\ \ p_{2k,2n} = u_{2k} u_{2n-2k}$. 
 Wiemy już, że teza jest prawdziwa dla $k = 0$ oraz $k = n$, gdyż
 \[  p_{2n,2n} = p_{0,2n} = u_{2n} = u_{2n}u_0. \]
-Dlatego weźmy dowolne $k$, takie że $0 < k < n$. Aby zaszło rozważane zdarzenie, błądzenie musi przechodzić przez 0. Załóżmy, że pierwszy raz dzieje się to w pewnym punkcie $2r$. Jeżeli w pierwszym kroku poszliśmy w górę (co dzieje się z prawdopodobieństwem $\frac{1}{2}$), to po powrocie musimy spędzić ``nad kreską'' jeszcze $2k-2r$ kroków. W przeciwnym razie po powrocie ciągle musimy być na plusie przez $2k$ kroków. Stąd
+Dlatego weźmy dowolne $k$, takie że $0 < k < n$. Aby zaszło rozważane zdarzenie, błądzenie musi przechodzić przez 0. Załóżmy, że pierwszy raz dzieje się to w pewnym punkcie $2r$. Jeżeli w pierwszym kroku poszliśmy w górę (co dzieje się z prawdopodobieństwem $\frac{1}{2}$), to po powrocie musimy spędzić ``nad kreską'' jeszcze $2k-2r$ kroków, a szanse tego zdarzenia wynoszą $p_{2k-2r, 2n-2r}$. W przeciwnym razie po powrocie ciągle musimy być na plusie przez $2k$ kroków, co zdarzy się z prawdopodobieństwem $p_{2k,2n-2r}$. Stąd
 \begin{equation*}
  \begin{split}
   p_{2k,2n} &= \frac{1}{2} \left( \sum_{r=1}^k f_{2r} p_{2k-2r,2n-2r} + \sum_{r=1}^{n-k} f_{2r} p_{2k, 2n-2r} \right) = (\bigstar)
@@ -216,11 +274,85 @@ zatem
 co było do okazania. Korzystając z (\ref{eq:u_val}) otrzymujemy tezę.
 \end{proof}
 
+Dzięki Twierdzeniu \ref{twier:disc_asine_law} możemy obliczać dokładne prawdopodobieństwa frakcji przewagi. Na Rysunku \ref{fig:disc_asine} przedstawiony jest ich rozkład dla $n=20$. Widać wyraźnie, że równomierny podział czasu na przewagę jednego i drugiego gracza jest najmniej prawdopodobny. Najbardziej prawdopodobna jest dominacja jednego z graczy przez większość czasu. Przykładowo prawdopodobieństwo, że po 100 rzutach
+\begin{itemize}
+ \item jeden z graczy wygrywa przez 90-100\% czasu, wynosi 44\%.
+ \item jeden z graczy ani razu nie wyjdzie na prowadzenie, wynosi 16\%.
+ \item ustalony gracz będzie prowadził przez 40-60\% czasu, wynosi 14\%.
+\end{itemize}
+
+\begin{figure}[ht]
+ \centering
+ \includegraphics[scale=0.4]{obrazki/discasine.pdf}
+ \caption{Rozkład czasu prowadzenia ustalonego gracza przy 40 rzutach monetą.}
+ \label{fig:disc_asine}
+\end{figure}
+
+Wzór (\ref{eq:disc_asine_law}) jest dokładny, ale często nieporęczny. Spróbujmy znaleźć rozsądne przybliżenie. Zakładając $k \conv \infty,\ n-k \conv \infty$ i korzystając ze wzoru Stirlinga ($n! \approx \sqrt{2\pi n} \left( \frac{n}{e} \right)^n$), dostajemy
+\[ \binom{2k}{k} = \frac{(2k)!}{k! k!} \approx \frac{\sqrt{4\pi k} \left( \frac{2k}{e} \right)^{2k}}{2\pi k \left( \frac{k}{e} \right)^{2k}} = \frac{2^{2k}}{\sqrt{\pi k}}, \]
+i podobnie
+\[ \binom{2n-2k}{n-k} \approx \frac{2^{2n-2k}}{\sqrt{\pi (n-k)}}. \]
+Podstawiając to do wzoru (\ref{eq:disc_asine_law}) otrzymujemy
+\begin{equation}
+  \label{eq:disc_asine_approx}
+   p_{2k,2n} \approx \frac{1}{\pi \sqrt{k(n-k)}}
+\end{equation}
+
+% \begin{equation*}
+%  \begin{split}
+%    p_{2k,2n}
+%    &= \binom{2k}{k}\binom{2n-2k}{n-k} 2^{-2n} = \frac{(2k)!}{k! k!} \frac{(2n - 2k)!}{(n-k)! (n-k)!} 2^{-2n} \\
+%    &\approx \frac{\sqrt{4\pi k} \left( \frac{2k}{e} \right)^{2k}}{2\pi k \left( \frac{k}{e} \right)^{2k}}
+%             \frac{\sqrt{4\pi (n-k)} \left( \frac{2n-2k}{e} \right)^{2n-2k}}{2\pi (n-k) \left( \frac{n-k}{e} \right)^{2n-2k}} 2^{-2n} \\
+%    &=       \frac{2^{2k}}{ \sqrt{\pi k} } \frac{ 2^{2n-2k}}{ \sqrt{\pi (n-k)} } 2^{-2n} = \frac{1}{\pi \sqrt{k(n-k)}}
+%  \end{split}
+% \end{equation*}
+
+Odpowiemy teraz na następujące pytanie: \textbf{jaka jest szansa, że w bardzo długiej grze byliśmy na prowadzeniu przez co najwyżej frakcję $x$ czasu?} ($0 < x < 1$)
+
+Niech $P_{2n}(x)$ oznacza szukane prawdopodobieństwo przy $2n$ rzutach monetą. Załóżmy na początek, że $x > \frac{1}{2}$. Wtedy
+\[ P_{2n}(x) = \sum_{k:\ \frac{k}{n} < x} p_{2k,2n} = \underbrace{\sum_{k:\ \frac{k}{n} \leq \frac{1}{2}} p_{2k,2n}}_{(\spadesuit)} + \underbrace{\sum_{k:\ \frac{1}{2} < \frac{k}{n} < x} p_{2k,2n}}_{(\clubsuit)}  \]
+Pamiętając o symetryczności rozkładu można zauważyć, że $(\spadesuit) \Conv \frac{1}{2}$ (można to też uzasadnić inaczej -- jeden z graczy musi być na prowadzeniu przez co najwyżej połowę czasu). Przy $n \conv \infty$ i $\frac{1}{2} < \frac{k}{n} < x < 1$ zachodzi również $k \Conv \infty$ oraz $\ n-k \Conv \infty$. Dlatego drugą sumę możemy estymować korzystając z (\ref{eq:disc_asine_approx}) oraz definicji całki Riemanna
+\begin{equation*}
+ \begin{split}
+ (\clubsuit) &\approx \sum_{k:\ \frac{1}{2} < \frac{k}{n} < x} \frac{1}{\pi \sqrt{k(n-k)}} =  \sum_{k:\ \frac{k}{n} < x} \frac{1}{\pi n} \frac{1}{ \sqrt{\frac{k}{n} (1 - \frac{k}{n})} } \\
+ &\xrightarrow[n \conv \infty]{} \frac{1}{\pi} \int_{1/2}^x \frac{dt}{\sqrt{t(1-t)}} = \frac{2}{\pi}\arcsin(\sqrt{x}) - \frac{1}{2},
+ \end{split}
+\end{equation*}
+czyli
+\[  P_{2n}(x) \xrightarrow[n \conv \infty]{} \frac{2}{\pi}\arcsin(\sqrt{x}). \]
+W celu znalezienia $P_{2n}(x)$ dla $0 < x < \frac{1}{2}$ skorzystamy ze znanych własności funkcji cyklometrycznych: $\arcsin x + \arccos x = \frac{\pi}{2}$ oraz $\arccos x = \arcsin(\sqrt{1-x^2})$.
+\begin{equation*}
+ \begin{split}
+  P_{2n}(x) &= 1 - P_{2n}(1-x) \xrightarrow[n \conv \infty]{} 1 - \frac{2}{\pi} \arcsin(\sqrt{1-x}) = 1 - \frac{2}{\pi} \arccos(\sqrt{x}) \\
+  &= 1 - \frac{2}{\pi} \left( \frac{\pi}{2} - \arcsin(\sqrt{x}) \right) = \frac{2}{\pi}\arcsin(\sqrt{x}).
+ \end{split}
+\end{equation*}
+W ten sposób udowodniliśmy
+\begin{twier}[\textbf{Prawo arcusa sinusa}]
+ Prawdopodobieństwo, że w $n$ krokach frakcja czasu $x$ ($0 \leq x \leq 1$), w której ustalony gracz ma przewagę (stan błądzenia przypadkowego jest dodatni), dąży przy $n \Conv \infty$ do
+ \[  \int_0^x \frac{dt}{\sqrt{t(1-t)}} = \frac{2}{\pi}\arcsin(\sqrt{x}) \]
+\end{twier}
+
+Innymi słowy w bardzo długiej grze frakcja czasu $x$ spędzona ``na plusie'' ma rozkład arcusa sinusa. Oto jego podstawowe własności:
+\begin{itemize}
+ \item gęstość $f(t) =  \frac{1}{\sqrt{t(1-t)}}$,
+ \item dystrybuanta $F(t) =  \frac{2}{\pi}\arcsin(\sqrt{t})$,
+ \item wartość oczekiwana: $\frac{1}{2}$,
+ \item wariancja: $\frac{1}{8}$.
+\end{itemize}
+Wykres gęstości i dystrybuanty przedstawia Rysunek \ref{fig:asine_dist}. Funkcja gęstości w kształcie litery U pokazuje, że nierówny podział czasu przewagi jest zdecydowanie bardziej prawdopodobny niż względnie równomierny.
+\begin{figure}[ht]
+ \centering
+ \includegraphics[scale=0.3]{obrazki/asinedist.pdf}
+ \caption{Rozkład arcusa sinusa.}
+ \label{fig:asine_dist}
+\end{figure}
 
 Ludzka intuicja silnie podpowiada, że w grze z symetryczną monetą, każdy z graczy powinien być na plusie przez około połowę czasu. Wydaje się to logiczne -- wiadomo, że liczba powrotów błądzenia przypadkowego do zera jest nieskończona w nieskończenie długiej grze. Zatem obaj gracze mają mniej więcej tyle samo fal kiedy są na plusie. Ponadto średnia długość dodatniej fali powinna być dla obu graczy zbliżona. Co z kolei prowadzi do wniosku, że obaj powinni być na prowadzeniu przez podobną frakcję czasu. Gdzie tkwi błąd w tym rozumowaniu? Otóż MPWL dotyczy zmiennych o skończonej wartości oczekiwanej. Tymczasem oczekiwany czas powrotu do zera w błądzeniu przypadkowym okazuje się być nieskończony, co kompletnie zmyla nasze intuicje.
 
 \chapter{Testowanie generatorów liczb pseudolosowych}
-\label{czescTest}
+\label{czesc:test}
 
 \begin{thebibliography}{99}
  \bibitem{feller}
