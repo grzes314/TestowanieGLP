@@ -9,6 +9,11 @@
 \usepackage{color}
 \usepackage{array}
 \usepackage{wrapfig} % Opływające obrazki
+\usepackage[chapter]{algorithm} % allows to keep algorithms as floats
+\usepackage{algpseudocode} % allows writing pseudocodes
+\usepackage{textcomp} % symbol 1/2
+\usepackage{bbm} %jedineczka
+
 
 %\addto\captionsenglish{
 %  \renewcommand\chaptername{}}
@@ -27,28 +32,64 @@
   \Huge}
 %\renewcommand\thechapter{\Roman{chapter}}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%% Ustawienia środowika algorytmów %%%%%%%%%%%%%%%
+\definecolor{comment}{RGB}{96,96,192}
+\definecolor{colorForKeyWord}{RGB}{165,42,42}
+\makeatletter
+ \renewcommand{\ALG@name}{Algorytm} 
+\makeatother  
+\algtext*{EndWhile}% Remove "end while" text
+\algtext*{EndIf}% Remove "end if" text
+\algtext*{EndFor}
+\algtext*{EndFunction}
+\renewcommand{\algorithmicif}{\textbf{jeżeli}}
+\renewcommand{\algorithmicthen}{\textbf{to}}
+\renewcommand{\algorithmicfor}{\textbf{dla}}
+\renewcommand{\algorithmicwhile}{\textbf{dopóki}}
+\renewcommand{\algorithmicdo}{\textbf{wykonuj}}
+\renewcommand{\algorithmicreturn}{\textbf{zwróć}}
+\renewcommand{\algorithmicfunction}{\textbf{procedura}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
 \newcolumntype{N}{@{}m{0pt}@{}}
 
 \newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Pro}[1]{\mathbb{P}\left(#1\right)}
 \newcommand{\conv}{\rightarrow}
 \newcommand{\Conv}{\longrightarrow}
+\newcommand{\ceil}[1]{\lceil#1\rceil}
 \newcommand{\Sg}[1]{S^*_#1}
 \newcommand{\Slil}[1]{S^{lil}_#1}
+\newcommand{\Sasin}[1]{S^{asin}_#1}
 \newcommand{\norm}[2]{\mathcal{N}\left(#1, #2\right)}
   
 \newtheorem{twier}{Twierdzenie}[chapter]
 \newtheorem{lemat}[twier]{Lemat}
 \newtheorem{fakt}[twier]{Fakt}
+\theoremstyle{definition}
+\newtheorem{mydef}{Definicja}[chapter]
 
 \begin{document}
+
+\author{Grzegorz Łoś}
+\title{Testowanie generatorów liczb pseudolosowych}
 
 \begin{center}
 \begin{Large}Grzegorz Łoś\end{Large}
 
 \begin{huge}\textbf{Testowanie generatorów liczb pseudolosowych} \end{huge}
+
+\begin{Large}20 sierpnia 2015\end{Large}
+
 \end{center}
 
+
+% \begin{minipage}{0.8\linewidth}
+% \maketitle
+% \end{minipage}
 
 \begin{minipage}{0.8\linewidth}
 \tableofcontents
@@ -64,9 +105,9 @@ Wyjście GLP jest po prostu ciągiem binarnych danych. Rozstrzygnięcie czy dany
 
 W części \ref{czesc:bladzenie} opisujemy te własności błądzenia przypadkowego, które przydadzą się w dalszej części pracy. Autorzy \cite{wang-nic} zauważyli użyteczność prawa iterowanego logarytmu do testowania generatorów. W niniejszej pracy proponujemy metodę testowania generatorów opartą o prawo arcusa sinusa.
 
-Część \ref{czesc:test} opisujemy dokładniej jak wykorzystać przytoczone prawa do testowania GLP. Postępujemy nieco inaczej niż w statystyce matematycznej, choć idea jest podobna. Uruchamiamy GLP $m$ razy (każdorazowo z innym ziarnem!). Na podstawie każdego ciągu zerojedynkowego otrzymanego z GLP (lub patrząc inaczej: na podstawie każdej realizacji błądzenia przypadkowego) obliczamy wartość pewnej funkcji. Znamy teoretyczny rozkład tej wartości i możemy obliczyć jego odległość od rozkładu otrzymanego empirycznie. Jeśli ta odległość jest duża, to możemy powiedzieć, że GLP jest niskiej jakości, w przeciwnym razie nie ma podstaw by go zdyskredytować.
+Część \ref{czesc:metoda} opisujemy dokładniej jak wykorzystać przytoczone prawa do testowania GLP. Postępujemy nieco inaczej niż w statystyce matematycznej, choć idea jest podobna. Uruchamiamy GLP $m$ razy (każdorazowo z innym ziarnem!). Na podstawie każdego ciągu zerojedynkowego otrzymanego z GLP (lub patrząc inaczej: na podstawie każdej realizacji błądzenia przypadkowego) obliczamy wartość pewnej funkcji. Znamy teoretyczny rozkład tej wartości i możemy obliczyć jego odległość od rozkładu otrzymanego empirycznie. Jeśli ta odległość jest duża, to możemy powiedzieć, że GLP jest niskiej jakości, w przeciwnym razie nie ma podstaw by go zdyskredytować.
 
-Wyniki testów kilku znanych GLP przedstawione są w części \ref{czesc:wyniki}
+Wyniki testów kilku znanych GLP przedstawione są w części \ref{czesc:testy}
 
 {\bigskip \color{red} \LARGE{TODO!} Rozdmuchać wstęp}
 
@@ -76,7 +117,7 @@ Wyniki testów kilku znanych GLP przedstawione są w części \ref{czesc:wyniki}
 
 Jak napisaliśmy we wprowadzeniu, własności błądzenia przypadkowego (inaczej: losowego) będą kluczowe dla testowania GLP. Zebrane w tej części wiadomości opracowane są na podstawie \cite{feller}. Większość oznaczeń jest również wzorowane na tej książce.
 
-Wyjście generowane przez GLP zawsze można traktować jako ciąg zerojedynkowy. Dlatego ważnym pojęciem będzie dla nas ciąg prób Bernoulliego $(B_i)_{i \in \mathbb{N}}$. Dla ustalonego $p \in [0,1]$ oznaczamy w ten sposób ciąg niezależnych zmiennych losowych o jednakowym rozkładzie, taki że
+Wyjście generowane przez GLP zawsze można traktować jako ciąg zerojedynkowy. Dlatego ważnym pojęciem będzie dla nas ciąg niezależnych prób Bernoulliego (inaczej: proces Bernoulliego) $(B_i)_{i \in \mathbb{N}}$. Dla ustalonego $p \in [0,1]$ oznaczamy w ten sposób ciąg niezależnych zmiennych losowych o jednakowym rozkładzie, taki że
 \[ \Prob(B_1 = 1) = p = 1 - \Prob(B_1 = 0). \]
 Możemy postrzegać $i$-ty bit wygenerowany przez GLP jako wyniki $i$-tej próby Bernoulliego. Dobry generator powinien z takim samym prawdopodobieństwem losować 0 oraz 1, dlatego ograniczymy się do przypadku $p = \frac{1}{2}$.
 
@@ -93,7 +134,7 @@ Tak zdefiniowany proces $(S_i)_{i \in \mathbb{N}}$ jest nazywany błądzeniem pr
  \label{fig:bladzenie}
 \end{figure}
 
-Sporo miejsca w rachunku prawdopodobieństwa poświęcono badaniu własności błądzenia przypadkowego, z których dwie omawiamy poniżej. Ideą testów, które przedstawiamy w części~\ref{czesc:test} jest sprawdzanie czy wyjście GLP zachowuje się tak jak to wynika z praw rachunku prawdopodobieństwa.
+Sporo miejsca w rachunku prawdopodobieństwa poświęcono badaniu własności błądzenia przypadkowego, z których dwie omawiamy poniżej. Ideą testów, które przedstawiamy w części~\ref{czesc:metoda} jest sprawdzanie czy wyjście GLP zachowuje się tak jak to wynika z praw rachunku prawdopodobieństwa.
 
 
 \section{Prawo iterowanego logarytmu}
@@ -150,9 +191,11 @@ Przyjrzyjmy się Rysunkowi \ref{fig:itlog}. Widać, że funkcja $\sqrt{2 n \log 
 Choć nie będzie przydatna w dalszej części pracy, jeszcze jedna ciekawa własność narzuca się by o niej wspomnieć. Niech $\Slil{n} = \frac{S_n}{\sqrt{2n \log \log n}}$. Z PIL wynika, że wielkość $\Slil{n}$ nie zbiega punktowo do żadnej stałej. Zachodzi natomiast zbieżność według prawdopodobieństwa. Ustalmy więc dowolnie małe $\varepsilon > 0$ i zastanówmy się jak często $\Slil{n}$ opuści epsilonowy pasek wokół zera. Możemy przyjąć $p < 1$ dowolnie bliskie jedności, a mimo to dla prawie wszystkich $n$ możemy powiedzieć, że z prawdopodobieństwem $p$ wielkość $\Slil{n}$ nie wyjdzie poza przedział $(-\varepsilon, \varepsilon)$. Tymczasem PIL równocześnie mówi nam, że ten epsilonowy pasek opuścimy nieskończenie wiele razy. Ta niesamowita, pozorna sprzeczność pokazuje jak bardzo nasza intuicja zawodzi, gdy myślimy o zjawiskach zachodzących w nieskończoności.
 
 \section{Prawo arcusa sinusa}
+\label{par:asin}
+
 Kolejna własność błądzenia przypadkowego, którą postaramy się wykorzystać do testowania GLP jest znana jako prawo arcusa sinusa. Odpowiada ono na pytanie przez jaką frakcję czasu ustalony gracz będzie na prowadzeniu. Spodziewalibyśmy się, że w przypadku bardzo długiej gry, obaj gracze będą na prowadzeniu przez mniej więcej tyle samo czasu. Jednak pokażemy, że również w tym przypadku nasza intuicja płata nam figla.
 
-Powiemy, że bilans gry w $k$-tym kroku ($k \geq 1$) był dodatni, jeżeli $S_k > 0$ lub $S_{k-1}~>~0$. Geometrycznie oznacza to, że odcinek wykresu błądzenia losowego przebiegający pomiędzy odciętymi $k-1$ oraz $k$, musi znajdować się nad osią x-ów.
+Powiemy, że bilans gry w $k$-tym kroku ($k \geq 1$) był dodatni, jeżeli $S_k > 0$ lub $S_{k-1}~>~0$. Pomijamy tu remisy przyjmując, że w przypadku wystąpienia równej liczby reszek i orłów przewagę ma ten, kto miał ją w poprzedniej chwili. Geometrycznie oznacza to, że odcinek wykresu błądzenia losowego przebiegający pomiędzy odciętymi $k-1$ oraz $k$, musi znajdować się nad osią x-ów.
 
 Wprowadźmy następujące oznaczenia:
 \begin{itemize}
@@ -351,8 +394,190 @@ Wykres gęstości i dystrybuanty przedstawia Rysunek \ref{fig:asine_dist}. Funkc
 
 Ludzka intuicja silnie podpowiada, że w grze z symetryczną monetą, każdy z graczy powinien być na plusie przez około połowę czasu. Wydaje się to logiczne -- wiadomo, że liczba powrotów błądzenia przypadkowego do zera jest nieskończona w nieskończenie długiej grze. Zatem obaj gracze mają mniej więcej tyle samo fal kiedy są na plusie. Ponadto średnia długość dodatniej fali powinna być dla obu graczy zbliżona. Co z kolei prowadzi do wniosku, że obaj powinni być na prowadzeniu przez podobną frakcję czasu. Gdzie tkwi błąd w tym rozumowaniu? Otóż MPWL dotyczy zmiennych o skończonej wartości oczekiwanej. Tymczasem oczekiwany czas powrotu do zera w błądzeniu przypadkowym okazuje się być nieskończony, co kompletnie zmyla nasze intuicje.
 
-\chapter{Testowanie generatorów liczb pseudolosowych}
-\label{czesc:test}
+\chapter{Opis metody testowania}
+\label{czesc:metoda}
+W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do tesotwania GLP. W tej części pokazujemy jak zastosować ją w praktyce.
+Na początek omawiamy jak wykorzystać GLP do generowania sekwencji bitów. Następnie opisujemy w jaki sposób sprawdzić czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy nową metodę opartą o prawo arcusa sinusa. W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
+
+\section{Generowanie ciągów bitów}
+Komputery operują tylko i wyłącznie na ciągach bitów, dlatego wyjście każdego programu, w szczególności GLP, może być traktowane jako ciąg zerojedynkowy. My potrzebujemy jednak ciągów specyficznych: każdy bit musi być generowany niezależnie i z jednakowym prawdopodobieństwem przyjmować wartości zero i jeden. Dlatego dla wygody języka wprowadźmy poniższy termin.
+\begin{mydef}
+ \textit{Idealnym ciągiem losowych bitów} nazywamy proces Bernoulliego z prawdopodobieństwem sukcesu $p = \frac{1}{2}$
+\end{mydef}
+\noindent Otrzymanie takiego ciągu z GLP nie jest tak trywialne, jak to się może w pierwszej chwili wydawać.
+
+\begin{algorithm}
+ \begin{algorithmic}[1]
+  \Function{GenerujCiągBitów}{\texttt{glp}}
+    \State $s \gets \epsilon$
+    \While {$s$ nie jest wystarczająco długi}
+      \Comment{{\color{comment} $\epsilon$ to słowo puste}}
+      \State $a \gets$ następna liczba z \texttt{glp}
+      \State $b \gets$ binarny zapis $a$ na $\ceil{\log_2 M}$ bitach
+      \State $s \gets s \odot b$
+      \Comment{{\color{comment} $\odot$ to operator konkatenacji}}
+     \EndWhile
+    \State \Return $s$.
+  \EndFunction
+ \end{algorithmic}
+ \caption{Prosta metoda generowania bitów z GLP.}
+ \label{alg:GenerateBitSequence}
+\end{algorithm}
+
+% GLP możemy wykorzystać do wygenerowania idealnego ciągu losowych bitów w następujący sposób:
+% \begin{enumerate}
+%  \item Otrzymujemy z generatora liczbę $a$.
+%  \item Zapisujemy $a$ binarnie na $\ceil{\log_2 M}$ bitach.
+%  \item Binarny zapis $a$ doklejamy do wyjściowego ciągu.
+%  \item Powtarzamy aż do otrzymynia pożądanie długiego ciągu bitów.
+% \end{enumerate}
+
+GLP zazwyczaj wykonują obliczenia modulo $M$, gdzie $M$ jest pewną stałą ustaloną dla danego generatora. Przy pojedynczym wywołaniu generatora otrzymujemy liczbę całkowitą ze zbioru $\bar{M} = \{0, 1, \ldots, M-1 \}$. Kolejne wywołania powinny dawać niezależne wyniki. Aby wykorzystać GLP do wygenerowania idealnego ciągu losowych bitów możemy użyć Algorytmu \ref{alg:GenerateBitSequence}. Jeśli $M$ jest potęgą dwójki, to zadziała on dobrze, mamy bowiem
+\begin{lemat}
+ Niech $M = 2^k$. Jeżeli GLP w każdym kroku generuje liczby niezależnie i jednostajnie w zbiorze $\bar{M}$, to Algorytm \ref{alg:GenerateBitSequence} generuje idealny ciąg losowych bitów.
+\end{lemat}
+\begin{proof}
+ W przypadku $M = 2^k$ mamy wzajemnie jednoznaczną odpowiedniość pomiędzy zbiorem $\bar{M}$ oraz układami $k$ bitów. Oznacza to, że w jednym kroku otrzymujemy z GLP każdy możliwy układ $k$ bitów z jednakowym prawdopodobieństwem $\frac{1}{2^k}$. Łatwo zauważyć, że wtedy każdy generowany bit ma równe szanse bycia jedynką i zerem, oraz jest niezależny od pozostałych.
+\end{proof}
+
+Jednak jeśli $M$ nie jest potęgą dwójki, to procedura nie działa -- przykładowo dla $M=5$ w każdym kroku doklejamy jedną z sekwencji $\{000, 001, 010, 011, 100\}$. Wówczas w wygenerowanym ciągu spotkanie jedynki jest mniej prawdopodobne niż zera -- jedynki stanowią tylko około $\frac{1}{3}$ wszystkich wygenerowanych bitów. Ponadto nie ma niezależności -- wystąpienie jedynki na bicie o indeksie podzielnym przez 3 oznacza, że kolejne dwa bity będą zerami.
+
+Jak widać, gdy $M$ nie jest postaci $2^k$ nie możemy w wyjściowym ciągu tak po prostu umieścić binarnego zapisu wygenerowanej liczby. Moglibyśmy przykładowo w generowanym ciągu umieszczać najmniej istotny bit liczby otrzymanej z GLP. Jeśli przy każdym wywołaniu GLP generuje niezależne liczby, to uzyskane bity również będą niezależne. Ponadto prawdopodobieństwo otrzymania jedynki wyniesie w przybliżeniu \textonehalf (dla $M$ parzystego jest to dokładnie \textonehalf, dla $M$ nieparzystego $\frac{M-1}{2M}$, co jest pomijalnym odstępstwem od \textonehalf). Zatem znalezienie nieprawidłowości w tak wygenerowanym ciągu oznaczałoby, że wykorzystany GLP jest wadliwy. Istnieje jednak możliwość, że wada generatora ujawnia się na innych bitach. W takiej sytuacji tego nie wykryjemy. Mamy tu więc do czynienia z dwoma problemami. Z jednej strony chcielibyśmy w testach uwzględnić jak najwięcej cech liczb otrzymanych z GLP. Z drugiej strony wiemy, że na bardziej znaczących bitach częściej pojawiają się zera, co mogłoby prowadzić do zaburzenia wyników testów. Dlatego zazwyczaj do wyjściowego ciągu bitów bierzemy jeden bajt wygenerowanej liczby. Wydaje się to być rozsądnym kompromisem.
+
+{\bigskip \color{red} \LARGE{TODO!} Pewnie wypada napisać tu trochę więcej}
+
+
+\section{Zastosowanie błądzenia przypadkowego do testowania GLP}
+
+Ogólna idea testów GLP, którą stosujemy w tej pracy nie jest skomplikowana. Metoda polega na obliczeniu pewnych charakterystyk ciągów wygenerowanych przez GLP i porównaniu ich empirycznych rozkładów z rozkładami, które są znane dla idealnego ciągu losowych bitów.
+
+Przykładowo, w części poświęconej prawu arcusa sinusa uzasadniliśmy, że bardziej prawdopodobna jest długa przewaga liczby jedynek nad liczbą zer niż równomierny rozkład prowadzenia. Jeśli generator sztucznie wyrównuje liczby zer i jedynek, to zauważymy odstępstwa od tej reguły. Zgodność z prawem arucsa sinusa sprawdzają testy oparte o zdefiniowaną poniżej charakterystykę $\Sasin{n}$.
+
+Podobnie ktoś mógłby pomyśleć, że czymś pozytywnym byłyby niewielkie różnice między liczbą jedynek i zer w ciągu bitów otrzymanym z GLP. Moglibyśmy zdecydować się na jakąś ,,rozsądną'' stałą, powiedzmy 100, i uznać, że generator jest dobry jeśli różnica liczby zer i jedynek w ciągu nie przekroczy 100. Wszak duże różnice mogłyby sugerować, że mamy różne prawdopodobieństwa wystąpienia zer i jedynek. Jednak prawo iterowanego logarytmu pokazuje, że to rozumowanie jest błędne. \emph{Należy} spodziewać się fluktuacji i odstępstw od zera, a ich brak oznacza, że GLP nie generuje idealnego ciągu losowych bitów. Tę obserwację wykorzystują testy opartę o charakterystykę $\Slil{n}$.
+
+
+\subsection{Testy oparte o prawo arcusa sinusa}
+Niech
+\begin{equation}
+D_k = \mathbbm{1}\left(S_k > 0 \vee S_{k-1}>0 \right), k=1,2,\ldots,n.
+\end{equation}
+Zmienna $D_k$ przyjmuje wartość 1, gdy w $k$-tym kroku błądzenia przypadkowego zachodzi przewaga liczby jedynek nad zerami (traktując remisy tak jak w paragrafie \ref{par:asin}), zaś 0 w przeciwnym przypadku. Zdefiniujmy charakterystykę $\Sasin{n}$ wzorem
+\begin{equation}
+ \Sasin{n} = \frac{1}{n} \sum_{k=1}^n D_k.
+\end{equation}
+Zatem $\Sasin{n}$ jest to frakcja czasu podczas której jedynki dominowały nad zerami. Wiemy z paragrafu \ref{par:asin}, że
+\[ \Pro{\Sasin{n} = \frac{k}{n}} = p_{k,n}, \]
+zaś korzystając z prawa arcusa sinusa
+\begin{equation}
+\begin{split}
+ \label{eq:prob_sasin}
+  \Pro{\Sasin{n} \in (a,b)} &\xrightarrow[n \conv \infty]{} \int_a^b \frac{dt}{\sqrt{t(1-t)}}\\
+  &= \frac{2}{\pi}\arcsin(\sqrt{b}) - \frac{2}{\pi}\arcsin(\sqrt{a}).
+\end{split}
+\end{equation}
+
+W celu przetestowania GLP generujemy przy jego użyciu $m$ ciągów zerojedynkowych długości~$n$. Otrzymujemy w ten sposób $m$ realizacji zmiennej $\Sasin{n}$, $j$-tą replikację oznaczamy $\Sasin{{n,j}}$. Ustalamy partycję prostej rzeczywistej i dla każdego odcinka w tej partycji zliczamy ile realizacji $\Sasin{n}$ do niego wpadło.
+
+W testach opartych o wielkość $\Sasin{n}$ korzystamy z $(s+2)$-elementowej partycji postaci $\mathcal{P}^{asin}_s = \{ P^{asin}_0, P^{asin}_1, \ldots, P^{asin}_{s+1}\}$, gdzie
+\begin{equation*}
+\begin{split}
+  P^{asin}_0 &= \left(-\infty, -\frac{1}{2s}\right),\\
+  P^{asin}_i &= \left[\frac{2i-3}{2s}, \frac{2i-1}{2s} \right),\ \ \ 1 \leq i \leq s,\\
+  P^{asin}_{s+1} &= \left[1- \frac{1}{2s}, \infty\right).
+\end{split}
+\end{equation*}
+
+Możemy teraz zdefiniować dwie miary określone na partycji  $\mathcal{P}^{asin}_s$. Pierwsza z nich, $ \mu^{asin}_n$, reprezentuje teoretyczny rozkład rozważanej charakterystyki:
+\begin{equation}
+ \mu^{asin}_n \left( P^{asin}_i \right) = \Pro{\Sasin{n} \in P^{asin}_i},\ \ \ 0 \leq i \leq s+1.
+\end{equation}
+Powyższą wartość możemy wyliczyć ze wzoru (\ref{eq:prob_sasin}).
+
+Druga miara, $\nu^{asin}_n$,  reprezentuje rozkład empiryczny, wyznaczony w testach. Określamy
+\begin{equation}
+ \nu^{asin}_n \left( P^{asin}_i \right) = \frac{|\{ j:\ \Sasin{{n,j}} \in  P^{asin}_i, 1 \leq j \leq m\}|}{m},\ \ \ 0 \leq i \leq s+1.
+\end{equation}
+
+
+Jeżeli testowany GLP jest dobry, to obie miary powinny być ,,mniej więcej takie same''. Ściślej, odległość między otrzymanymi miarami powinna być mała. Korzystamy ze znanych funkcji odległości \textit{total variation distance} oraz \textit{separation distance}. Są one zdefiniowane następująco dla dowolnych miar $\mu$ oraz $\nu$:
+\begin{align}
+ d^{tv}(\mu, \nu) &= \sup_{A \subseteq \mathbb{R}} |\mu(A) - \nu(A)|,\\
+ d^{sep}(\mu, \nu) &= \sup_{A \subseteq \mathbb{R}} \left(1 - \frac{\mu(A)}{\nu(A)}\right)
+\end{align}
+Ponieważ nie jesteśmy w stanie wyznaczyć supremum na całej prostej, skorzystamy z nieco uproszczonych definicji. Dla partycji $\mathcal{P}$ prostej rzeczywistej, definiujemy:
+\begin{align}
+ d^{tv}_\mathcal{P}(\mu, \nu) &= \frac{1}{2} \sum_{A \in \mathcal{P}} |\mu(A) - \nu(A)|
+    = \sum_{\substack{A \in \mathcal{P},\\ \mu(A) >\nu(A)}} \Big(\mu(A) - \nu(A)\Big)\\
+ d^{sep}_\mathcal{P}(\mu, \nu) &= \sup_{A \in \mathcal{P}}\left(1 - \frac{\mu(A)}{\nu(A)}\right)
+\end{align}
+
+Inne podejście polega na testowaniu hipotezy o zgodności rozkładów. Korzystając z terminologii statystycznej wielkości $\Sasin{{n,j}}$ będziemy nazywać obserwacjami. Hipotezą zerową jest stwierdzenie, że obserwacje mają rozkład $\mu^{asin}_n$, czyli de facto, że GLP generuje idealny ciąg losowych bitów. Niech $O_i$ oznacza liczbę obserwacji wpadających do przedziału $P^{asin}_i$, tzn.
+\begin{equation}
+ O_i = |\{ j:\ \Slil{{n,j}} \in  P^{asin}_i, 1 \leq j \leq m\}|,\ \ \ 0 \leq i \leq s+1,
+\end{equation}
+oraz $E_i$ oznacza \textit{oczekiwaną} liczbę obserwacji wpadających do tego przedziału, czyli
+\begin{equation}
+ E_i = m \cdot \Pro{\Sasin{n} \in P^{asin}_i},\ \ \ 0 \leq i \leq s+1.
+\end{equation}
+Wartość $E_i$ znamy dokładnie ze wzoru (\ref{eq:prob_sasin}). Przy hipotezie zerowej statystyka
+\begin{equation}
+ T = \sum_{i=0}^{s+1} \frac{(O_i - E_i)^2}{E_i}
+\end{equation}
+ma w przybliżeniu rozkład chi-kwadrat z $s+1$ stopniami swobody, oznaczany $\chi^2(s+1)$. Duże wartości tej statystyki są dowodem wadliwości GLP.
+
+
+\subsection{Testy oparte o prawo iterowanego logarytmu}
+Przyjrzyjmy się teraz metodzie zastosowanej w \cite{wang-nic}. Jest ona podobna do metody opisanej w poprzednim paragrafie. Liczymy jedynie inną charakterystykę ciągów i dostosowujemy partycję prostej. Przypomnijmy oznaczenie
+\begin{equation}
+\Slil{n} = \frac{S_n}{\sqrt{2n \log \log n}}.
+\end{equation}
+Można łatwo znaleźć teoretyczny rozkład tej charakterystyki (tzn. rozkład dla idealnego ciągu losowych bitów). Istotnie, korzystając z centralnego twierdzenia granicznego dostajemy
+\begin{equation}
+\begin{split}
+  \label{eq:prob_slil}
+ \Pro{\Slil{n} \in (a,b)} &= \Pro{\frac{S_n}{\sqrt{n}} \in \left(a\sqrt{2 \log \log n},  b\sqrt{2 \log \log n}\right)}\\
+ &\approx \Phi(b\sqrt{2 \log \log n}) - \Phi(a\sqrt{2 \log \log n})
+\end{split}
+\end{equation}
+Jako, że $\Slil{n}$ przyjmuje swoje wartości w szerszym przedziale niż $\Sasin{n}$, dlatego korzystamy z innej partycji prostej, mianowicie $\mathcal{P}^{lil}_s = \{ P^{lil}_0, P^{lil}_1, \ldots, P^{lil}_{s+1}\}$, gdzie
+\begin{equation*}
+\begin{split}
+  P^{lil}_0 &= (-\infty, -1),\\
+  P^{lil}_i &= \left[-1 + \frac{2(i-1)}{s}, -1 + \frac{2i}{s} \right),\ \ \ 1 \leq i \leq s,\\
+  P^{lil}_{s+1} &= [1, \infty).
+\end{split}
+\end{equation*}
+Teoretyczny i empiryczny rozkład określamy w tym przypadku następująco:
+\begin{equation}
+ \label{eq:mu_lil}
+ \mu^{lil}_n \left( P^{lil}_i \right) = \Pro{\Slil{n} \in P^{lil}_i},\ \ \ 0 \leq i \leq s+1,
+\end{equation}
+\begin{equation}
+ \nu^{lil}_n \left( P^{lil}_i \right) = \frac{|\{ j:\ \Slil{{n,j}} \in  P^{lil}_i, 1 \leq j \leq m\}|}{m},\ \ \ 0 \leq i \leq s+1,
+\end{equation}
+przy czym wartość (\ref{eq:mu_lil}) znamy dzięki (\ref{eq:prob_slil}), zaś $\Slil{{n,j}}$ oznacza oczywiście replikacje $\Slil{n}$, obliczone dla kolejnych ciągów.
+
+\section{Analiza błędów}
+
+
+\chapter{Testy}
+\label{czesc:testy}
+
+\section{Wyniki}
+Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów długości $n = 2^{34}$ bitów. Używaliśmy partycji $\mathcal{P}^{lil}_{40}$ dla testów korzystających z charakterystyki $\Slil{n}$ i partycji $\mathcal{P}^{asin}_{40}$ dla testów korzystających z charakterystyki $\Sasin{n}$.
+
+\subsection{Borland C rand function}
+
+\subsection{GCC rand function}
+
+\subsection{BSD rand}
+
+\subsection{Minstd}
+
+\subsection{CMRG}
+
+\section{Podsumowanie}
+
 
 \begin{thebibliography}{99}
  \bibitem{feller}
