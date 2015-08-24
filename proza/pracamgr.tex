@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt,oneside]{book}
+\documentclass[a4paper,11pt,twoside]{book}
 \usepackage[left=2.5cm,right=2.5cm]{geometry}
 \usepackage[utf8]{inputenc}
 %\usepackage[polish]{babel}
@@ -13,6 +13,8 @@
 \usepackage{algpseudocode} % allows writing pseudocodes
 \usepackage{textcomp} % symbol 1/2
 \usepackage{bbm} %jedineczka
+\usepackage[section]{placeins} % keeps floats in their places
+\usepackage{fancyhdr}
 
 
 %\addto\captionsenglish{
@@ -72,20 +74,43 @@
 \theoremstyle{definition}
 \newtheorem{mydef}{Definicja}[chapter]
 
+\title{Testowanie generatorów liczb pseudolosowych}
+\author{Grzegorz Łoś}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[RO]{\small\bfseries\thepage}
+\fancyhead[LE,RO]{\small\bfseries\thepage} %do odkomentowania w wersji dwustronnej
+\fancyhead[LO]{\small\bfseries\nouppercase\rightmark}
+\fancyhead[RE]{\small\bfseries\nouppercase\leftmark} %do odkomentowania w wersji dwustronnej
+
 \begin{document}
 
-\author{Grzegorz Łoś}
-\title{Testowanie generatorów liczb pseudolosowych}
-
+\thispagestyle{empty}
 \begin{center}
-\begin{Large}Grzegorz Łoś\end{Large}
-
-\begin{huge}\textbf{Testowanie generatorów liczb pseudolosowych} \end{huge}
-
-\begin{Large}20 sierpnia 2015\end{Large}
-
+\textbf{\large Uniwersytet Wrocławski\\
+Wydział Matematyki i Informatyki\\
+Instytut Matematyczny}\\
+\vspace{4cm}
+\textbf{\textit{\large Grzegorz Łoś}\\
+\vspace{0.5cm}
+{\Large Zastosowanie błądzenia przypadkowego do testowania generatorów liczb pseudolosowych}}\\
+\end{center}
+\vspace{3cm}
+{\large \hspace*{6.5cm}Praca magisterska\\
+\hspace*{6.5cm}napisana pod kierunkiem\\
+\hspace*{6.5cm}dr. Pawła Lorka }\\
+\vfill
+\begin{center}
+{\large Wrocław 2015}\\
 \end{center}
 
+\newpage
+\thispagestyle{empty}
+\begin{minipage}{0.5\linewidth}
+\end{minipage}
+
+\newpage
 
 % \begin{minipage}{0.8\linewidth}
 % \maketitle
@@ -394,10 +419,81 @@ Wykres gęstości i dystrybuanty przedstawia Rysunek \ref{fig:asine_dist}. Funkc
 
 Ludzka intuicja silnie podpowiada, że w grze z symetryczną monetą, każdy z graczy powinien być na plusie przez około połowę czasu. Wydaje się to logiczne -- wiadomo, że liczba powrotów błądzenia przypadkowego do zera jest nieskończona w nieskończenie długiej grze. Zatem obaj gracze mają mniej więcej tyle samo fal kiedy są na plusie. Ponadto średnia długość dodatniej fali powinna być dla obu graczy zbliżona. Co z kolei prowadzi do wniosku, że obaj powinni być na prowadzeniu przez podobną frakcję czasu. Gdzie tkwi błąd w tym rozumowaniu? Otóż MPWL dotyczy zmiennych o skończonej wartości oczekiwanej. Tymczasem oczekiwany czas powrotu do zera w błądzeniu przypadkowym okazuje się być nieskończony, co kompletnie zmyla nasze intuicje.
 
-\chapter{Opis metody testowania}
-\label{czesc:metoda}
-W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do tesotwania GLP. W tej części pokazujemy jak zastosować ją w praktyce.
-Na początek omawiamy jak wykorzystać GLP do generowania sekwencji bitów. Następnie opisujemy w jaki sposób sprawdzić czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy nową metodę opartą o prawo arcusa sinusa. W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
+\chapter{Generatory liczb pseudolosowych}
+\label{czesc:generatory}
+
+Każdy intuicyjnie rozumie czym jest generator liczb pseudolosowych. Jednak dla pełności matematycznego opisu zaczniemy od przedstawienia jego ścisłej definicji. Przedstawiona tu teoria opiera się na książce \cite{asmussen}. Na jej podstawie opisujemy również kilka rodzajów generatorów liczb pseudolosowych. Sposób otrzymania z GLP ciągu bitów o dobrych własnościach również wymaga pewnego komentarza, o czym piszemy dalej. Na końcu tej części krótko omówimy znane metody testowania generatorów liczb pseudolosowych.
+
+\section{Definicja GLP}
+Istnieją metody otrzymania liczb ,,prawdziwie losowych''. Najprostszym sposobem jest wielokrotne rzucenie kostką do gry lub monetą i stablicowanie otrzymanych wyników. Lepszym sposobem jest obserwowanie emitowanych cząsteczek przez próbkę radioaktywnego pierwiastka -- uważa się, że rozkład radioaktywny jest dobrze modelowany przez proces Poissona. Kolejnym pomysłem jest wykorzystanie szumu atmosferycznego, z tej metody korzysta strona \cite{rorg}. Źródła takiej losowości są jednak zazwyczaj zbyt wolne, trudno dostępne lub mają pewne inherentne wady (moneta może być niesymetryczna, detektor cząstek nie rejestruje zgłoszeń o zbyt krótkim odstępie, itp.). Wynika stąd potrzeba utworzenia deterministycznych algorytmów które imitowałyby losowość. Takie algorytmy nazywamy generatorami liczb pseudolosowych. Aby były praktyczne, muszą być szybkie i obliczalne na zwykłych komputerach. Liczby przez nie generowane jedynie ,,udają'' losowe, dlatego nazywamy je pseudolosowymi.
+\begin{mydef}
+\label{def:glp}
+ Generator liczb pseudolosowych jest to piątka\footnote{Jest to nieco inna definicja niż w \cite{asmussen}, dostosowana do naszych potrzeb. W książce Asmussena przyjmuje się $V = [0,1]$, zaś zamiast $s_0$ w definicji znajduje się $\mu$ -- rozkład prawdopodobieństwa początkowego stanu.} $\langle E, V, s_0, f, g \rangle$, gdzie $E$ jest skończoną przestrzenią stanów, $V$ jest zbiorem wartości zwracanych przez generator, $s_0$ jest to tzw. ziarno, czyli początkowy stan w ciągu stanów $(s_i)_{i=0}^\infty$, funkcja $f:E \rightarrow E$ opisuje przejścia między kolejnymi stanami: $s_n = f(s_{n-1})$, zaś $g:E\rightarrow V$, odwzorowuje stan generatora w wartość przez niego zwracaną.
+\end{mydef}
+Najczęściej przyjmuje się $V = (0,1)$ lub $V = \bar{M}$ dla pewnego $M$ (dla $n \in \mathbb{N}$ symbol $\bar{n}$ oznacza zbiór $\{0,1,\ldots,n-1\}$). U nas będzie zachodzić właśnie ta druga możliwość.
+
+Zauważmy, że każdy GLP prędzej lub później ,,zapętla się'', tzn. musi istnieć takie $d$, że dla pewnego $l$ zachodzi $s_{l+d} = s_l$ (wynika to ze skończoności przestrzeni stanów). Minimalne $d$ o tej własności nazywane jest \textit{okresem} generatora. Dobre generatory powinny mieć jak najdłuższe okresy, optymalnie równe $|E|$.
+
+Poniżej przedstawiamy popularne rodzaje GLP.
+
+\subsection*{LCG}
+Generatory LCG (z ang. \textit{linear congruential generator}) zmieniają swój stan zgodnie z rekurencją
+\begin{equation}
+ \label{eq:lcg}
+ s_n = (a s_{n-1} + c) \mod M.
+\end{equation}
+Generator tej klasy jest określony przez moduł $M$, mnożnik $a$ oraz przyrost $c$, co oznaczamy $LCG(M,a,c)$. Zauważmy, że $LCG(M,a,c,b)$ spełnia definicję GLP z $E = \bar{M}$, $V = \bar{M}$, $f(x) = (a x + c) \mod M$ oraz $g(x) = x$.
+
+Dobranie wartości $M, a, c$ tak by generator miał długi okres nie jest łatwym zadaniem. Z pomocą przychodzi
+\begin{twier}
+  Przy poniższych warunkach $LCG(M,a,c)$ ma okres równy $M$:
+  \begin{itemize}
+   \item $c$ oraz $M$ są względnie pierwsze,
+   \item jeśli $p$ jest liczbą pierwszą i $p | M$, to $p |(a - 1)$,
+   \item jeśli $4 | M$, to $4 |(a-1)$.
+  \end{itemize}
+\end{twier}
+\noindent Powyższe twierdzenie pochodzi z pracy \cite{hull}.
+
+Zauważmy jeszcze, że znalezienie LCG o pełnym okresie nie gwarantuje, że generator będzie dobrej jakości. Łatwo zauważyć następujący
+\begin{fakt}
+ Niech $M = 2^k$. Wówczas $d$ najmniej istotnych bitów $LCG(M,a,c)$ ma okres równy co najwyżej $2^d$.
+\end{fakt}
+\noindent W tym przypadku nie ma więc mowy o niezależności liczb generowanych przez LCG. Niektóre pakiety korzystające z LCG obchodzą ten problem zwracając tylko najbardziej znaczące bity wygenerowanych liczb.
+
+\subsection*{MCG}
+MCG (z ang. \textit{multiplicative congruential generator}) znany jest też jako GLP Lehmera lub GLP Parka-Millera. 
+Jest to szczególny przypadek LCG, w którym $c = 0$, czyli kolejne stany opisuje rekurencja
+\begin{equation}
+ \label{eq:mcg}
+ s_n = a s_{n-1} \mod M.
+\end{equation}
+MCG o parametrach $M$ oraz $a$ oznaczamy $MCG(M, a)$. Aby $MCG(M,a)$ mogło mieć dobre własności $M$ powinno być liczbą pierwszą lub jej potęgą, $a$ powinno być generatorem grupy $\mathbb{Z}_M^*$, a ziarno $s_0$ powinno być względnie pierwsze z $M$. 
+
+\subsection*{GLCG}
+Wyżej opisane GLP dzielą pewną wadę -- mają stosunkowo krótkie okresy. W przypadku gdy potrzebujemy dłuższych okresów przydatne mogą być uogólnione LCG (z ang. \textit{generalized linear congruential generator}). Postępują one zgodnie z rekurencją
+\begin{equation}
+ \label{eq:glcg}
+ x_n = (a_1 x_{n-1} + a_2 x_{n-2} + \ldots + a_k x_{n-k} + c) \mod M.
+\end{equation}
+GLCG zmieniający stany w ten sposób oznaczamy $GLCG(M, (a_i)_{i=1}^k, c)$. Jest to ciągle GLP w myśl definicji \ref{def:glp}, gdzie $E = \bar{M}^k$, $s_n = \langle x_n, x_{n-1}, \ldots  x_{n-k+1} \rangle$, $g(s_n) = x_n$. Dobry dobór parametrów może dać okres równy $M^k-1$.
+
+\subsection*{Generatory mieszane}
+Dobrym pomysłem na ulepszenie GLP jest połączenie kilku generatorów w jeden. Załóżmy, że mamy dane $k$ GLP $\langle E_j, V_j, s_{j,0}, f_j, g_j \rangle$, $1 \leq j \leq k$, gdzie $j$-ty generator zmienia stan według zależności 
+\[ s_{j,n} = f_j(s_{j,n-1}). \]
+Możemy teraz zdefiniować mieszany generator w taki sposób, aby ciąg jego stanów spełniał
+\[ s_n = \langle s_{1,n}, s_{1,n}, \ldots s_{k,n} \rangle\]
+Niech ponadto $d_j$ oznacza okres $j$-tego ,,składowego'' generatora. Jak pokazał L'Ecuyer (\cite{lecuyer}, Lemma 2) mieszany generator ma okres $d = NWW(d_1, d_2,\ldots,d_k)$.
+
+Szczególnym przypadkiem generatorów mieszanych są \textbf{CMCG} (z ang. \textit{combined multiplicative congruential generator}). Składa się on $k$ generatorów $MCG(M_j, a_j)$, czyli funkcją przejścia jest
+\[ s_{j,n} = a_j s_{j,n-1} \mod M_j. \]
+Wyjście generatora mieszanego jest
+\[ g(s_n) = \left( \sum_{j=1}^{k} (-1)^{j-1} s_{j,n} \right) \mod M_1 - 1\]
+Ponadto jeśli liczby $\frac{M_j-1}{2}$ są względnie pierwsze, to CMCG ma optymalny okres wynoszący $\frac{1}{2^k}(M_1-1)\cdot \ldots \cdot (M_k-1)$.
+
+\subsection*{Mersenne Twister}
+{\bigskip \color{red} \LARGE{TODO!}}
+
 
 \section{Generowanie ciągów bitów}
 Komputery operują tylko i wyłącznie na ciągach bitów, dlatego wyjście każdego programu, w szczególności GLP, może być traktowane jako ciąg zerojedynkowy. My potrzebujemy jednak ciągów specyficznych: każdy bit musi być generowany niezależnie i z jednakowym prawdopodobieństwem przyjmować wartości zero i jeden. Dlatego dla wygody języka wprowadźmy poniższy termin.
@@ -445,6 +541,13 @@ Jednak jeśli $M$ nie jest potęgą dwójki, to procedura nie działa -- przykł
 Jak widać, gdy $M$ nie jest postaci $2^k$ nie możemy w wyjściowym ciągu tak po prostu umieścić binarnego zapisu wygenerowanej liczby. Moglibyśmy przykładowo w generowanym ciągu umieszczać najmniej istotny bit liczby otrzymanej z GLP. Jeśli przy każdym wywołaniu GLP generuje niezależne liczby, to uzyskane bity również będą niezależne. Ponadto prawdopodobieństwo otrzymania jedynki wyniesie w przybliżeniu \textonehalf (dla $M$ parzystego jest to dokładnie \textonehalf, dla $M$ nieparzystego $\frac{M-1}{2M}$, co jest pomijalnym odstępstwem od \textonehalf). Zatem znalezienie nieprawidłowości w tak wygenerowanym ciągu oznaczałoby, że wykorzystany GLP jest wadliwy. Istnieje jednak możliwość, że wada generatora ujawnia się na innych bitach. W takiej sytuacji tego nie wykryjemy. Mamy tu więc do czynienia z dwoma problemami. Z jednej strony chcielibyśmy w testach uwzględnić jak najwięcej cech liczb otrzymanych z GLP. Z drugiej strony wiemy, że na bardziej znaczących bitach częściej pojawiają się zera, co mogłoby prowadzić do zaburzenia wyników testów. Dlatego zazwyczaj do wyjściowego ciągu bitów bierzemy jeden bajt wygenerowanej liczby. Wydaje się to być rozsądnym kompromisem.
 
 {\bigskip \color{red} \LARGE{TODO!} Pewnie wypada napisać tu trochę więcej}
+
+\section{Znane metody testowania GLP}
+
+\chapter{Metoda testowania}
+\label{czesc:metoda}
+W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do tesotwania GLP. W tej części pokazujemy jak zastosować ją w praktyce.
+Na początek omawiamy jak wykorzystać GLP do generowania sekwencji bitów. Następnie opisujemy w jaki sposób sprawdzić czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy nową metodę opartą o prawo arcusa sinusa. W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
 
 
 \section{Zastosowanie błądzenia przypadkowego do testowania GLP}
@@ -563,30 +666,223 @@ przy czym wartość (\ref{eq:mu_lil}) znamy dzięki (\ref{eq:prob_slil}), zaś $
 \chapter{Testy}
 \label{czesc:testy}
 
-\section{Wyniki}
+\section{Uwagi praktyczne}
+
 Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów długości $n = 2^{34}$ bitów. Używaliśmy partycji $\mathcal{P}^{lil}_{40}$ dla testów korzystających z charakterystyki $\Slil{n}$ i partycji $\mathcal{P}^{asin}_{40}$ dla testów korzystających z charakterystyki $\Sasin{n}$.
 
-\subsection{Borland C rand function}
+\section{Wyniki}
+% \begin{table}[ht!]
+% \centering
+%  \caption{Wyniki dla $\Sasin{n}$.}
+%  \label{tab:xxx_asin}
+% \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+%  \hline
+%      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+% 
+%  
+% \end{tabular}  
+% \end{table}
+% \begin{table}[ht!]
+% \centering
+%  \caption{Wyniki dla $\Slil{n}$.}
+%  \label{tab:xxx_lil}
+% \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+%  \hline 
+%      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+%  
+% \end{tabular}  
+% \end{table}
 
-\subsection{GCC rand function}
+\subsection{Bilioteczny rand w Borland C}
 
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Sasin{n}$.}
+ \label{tab:borland_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.038 &   0.05 &   0.07 &  0.086 &  0.139 &  0.156 &  0.123 &  0.147 &  0.215\\ \hline
+  sep1 &  0.129 &  0.184 &  0.251 &  0.373 &  0.549 &  0.515 &   0.57 &  0.687 &  0.822\\ \hline
+  sep2 &  0.202 &  0.212 &   0.21 &  0.314 &   0.37 &  0.373 &   0.38 &  0.517 &  0.401\\ \hline
+ p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
+
+
+ 
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Slil{n}$.}
+ \label{tab:borland_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.049 &  0.084 &  0.124 &  0.182 &   0.31 &  0.407 &  0.465 &   0.59 &  0.941\\ \hline
+  sep1 &  0.599 &  0.708 &    0.9 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
+  sep2 &  0.179 &  0.233 &  0.276 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
+ p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
+
+ 
+\end{tabular}  
+\end{table}
+
+\FloatBarrier
+\subsection{Biblioteczny rand w moim kompilatorze}
+
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Sasin{n}$.}
+ \label{tab:mojkomp_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.029 &  0.022 &  0.026 &  0.023 &   0.02 &  0.029 &  0.024 &  0.025 &  0.023\\ \hline
+  sep1 &  0.116 &  0.125 &  0.163 &  0.119 &  0.166 &  0.172 &  0.131 &  0.132 &   0.14\\ \hline
+  sep2 &  0.175 &  0.191 &  0.144 &  0.187 &  0.111 &  0.134 &  0.179 &  0.126 &  0.188\\ \hline
+ p-val &  0.065 &  0.551 &  0.257 &  0.489 &  0.797 &  0.111 &  0.588 &   0.26 &  0.393\\ \hline
+
+
+ 
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Slil{n}$.}
+ \label{tab:mojkomp_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.021 &  0.029 &  0.029 &   0.03 &  0.023 &  0.023 &  0.034 &  0.024 &  0.022\\ \hline
+  sep1 &  0.109 &   0.11 &  0.103 &  0.158 &  0.152 &  0.145 &  0.258 &  0.399 &  0.256\\ \hline
+  sep2 &  0.322 &  0.343 &  0.326 &  0.322 &  0.252 &  0.284 &  0.376 &   0.22 &   0.14\\ \hline
+ p-val &  0.576 &  0.012 &  0.005 &  0.003 &  0.274 &  0.237 &    0.0 &  0.469 &   0.79\\ \hline
+
+ 
+\end{tabular}  
+\end{table}
+
+\FloatBarrier
 \subsection{BSD rand}
 
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Sasin{n}$.}
+ \label{tab:bsd_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213\\ \hline
+  sep1 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826\\ \hline
+  sep2 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436\\ \hline
+ p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
+
+
+ 
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Slil{n}$.}
+ \label{tab:bsd_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95\\ \hline
+  sep1 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
+  sep2 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
+ p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
+
+ 
+\end{tabular}  
+\end{table}
+\FloatBarrier
 \subsection{Minstd}
 
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Sasin{n}$.}
+ \label{tab:minstd_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.033 &  0.033 &  0.053 &  0.072 &  0.086 &  0.104 &   0.16 &  0.202 &  0.208\\ \hline
+  sep1 &  0.151 &  0.134 &  0.184 &  0.241 &  0.223 &  0.667 &  0.494 &   0.71 &  0.828\\ \hline
+  sep2 &  0.175 &  0.149 &  0.265 &  0.373 &  0.398 &  0.379 &  0.369 &  0.505 &  0.422\\ \hline
+ p-val &  0.005 &  0.017 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
+
+
+ 
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Slil{n}$.}
+ \label{tab:minstd_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.029 &  0.051 &  0.076 &  0.095 &  0.181 &  0.205 &   0.35 &  0.316 &    0.9\\ \hline
+  sep1 &  0.556 &  0.453 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
+  sep2 &  0.108 &  0.307 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
+ p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
+
+ 
+\end{tabular}  
+\end{table}
+\FloatBarrier
 \subsection{CMRG}
 
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Sasin{n}$.}
+ \label{tab:cmrg_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.019 &  0.023 &  0.024 &  0.024 &  0.024 &  0.023 &  0.021 &  0.027 &  0.027\\ \hline
+  sep1 &  0.113 &  0.209 &  0.119 &  0.145 &   0.15 &  0.119 &  0.123 &  0.159 &  0.208\\ \hline
+  sep2 &   0.14 &  0.094 &  0.116 &  0.134 &  0.193 &  0.167 &  0.093 &  0.135 &  0.116\\ \hline
+ p-val &  0.976 &  0.466 &  0.764 &  0.799 &  0.383 &  0.682 &  0.985 &  0.204 &  0.161\\ \hline
+
+
+ 
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Slil{n}$.}
+ \label{tab:cmrg_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+    tv &  0.031 &  0.026 &   0.03 &  0.022 &  0.026 &  0.026 &  0.033 &  0.023 &  0.023\\ \hline
+  sep1 &  0.108 &  0.256 &  0.173 &  0.169 &   0.27 &  0.139 &  0.296 &  0.317 &  0.283\\ \hline
+  sep2 &  0.469 &  0.326 &  0.263 &  0.225 &  0.266 &  0.199 &  0.266 &  0.266 &  0.176\\ \hline
+ p-val &    0.0 &  0.001 &  0.007 &  0.386 &  0.207 &  0.296 &  0.007 &  0.387 &  0.689\\ \hline
+
+ 
+\end{tabular}  
+\end{table}
+\FloatBarrier
 \section{Podsumowanie}
 
 
 \begin{thebibliography}{99}
+ \bibitem{asmussen}
+    S. Asmussen, P. Glynn, \emph{Stochastic Simulation: Algorithms and Analysis}, Springer, New York, 2007
  \bibitem{feller}
     W. Feller, \emph{Wstęp do rachunku prawdopodobieństwa}, PWN, Warszawa, Wydanie piąte, 1987
- \bibitem{wang-nic}
-    Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, 2014
+ \bibitem{hull}
+    T. Hull, A. Dobell, \emph{Random number generators}, SIAM Rev, v.4, 1962, s. 230-254
  \bibitem{jak-szt}
     J. Jakubowski, R. Sztencel, \emph{Wstęp do teorii prawdopodobieństwa}, Script, Warszawa, Wydanie IV, 2010
-
+  \bibitem{lecuyer}
+    P. L'Ecuyer (1988). \emph{Efficient and Portable Combined Random Number Generator}, Communications of the ACM 31: 742–749, 774.
+ \bibitem{wang-nic}
+    Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, 2014
+ \bibitem{rorg}
+    www.random.org
 \end{thebibliography}
 
 
