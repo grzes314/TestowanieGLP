@@ -444,7 +444,7 @@ Zauważmy, że każdy GLP prędzej lub później ,,zapętla się'', tzn. musi is
 Poniżej przedstawiamy popularne rodzaje GLP.
 
 \subsection*{LCG}
-Generatory LCG (z ang. \textit{linear congruential generator}) zmieniają swój stan zgodnie z rekurencją
+Generatory LCG (od ang. \textit{linear congruential generator}) zmieniają swój stan zgodnie z rekurencją
 \begin{equation}
  \label{eq:lcg}
  s_n = (a s_{n-1} + c) \mod M.
@@ -469,7 +469,7 @@ Zauważmy jeszcze, że znalezienie LCG o pełnym okresie nie gwarantuje, że gen
 \noindent W tym przypadku nie ma więc mowy o niezależności liczb generowanych przez LCG. Niektóre pakiety korzystające z LCG obchodzą ten problem zwracając tylko najbardziej znaczące bity wygenerowanych liczb.
 
 \subsection*{MCG}
-MCG (z ang. \textit{multiplicative congruential generator}) znany jest też jako GLP Lehmera lub GLP Parka-Millera. 
+MCG (od ang. \textit{multiplicative congruential generator}) znany jest też jako GLP Lehmera lub GLP Parka-Millera. 
 Jest to szczególny przypadek LCG, w którym $c = 0$, czyli kolejne stany opisuje rekurencja
 \begin{equation}
  \label{eq:mcg}
@@ -478,7 +478,7 @@ Jest to szczególny przypadek LCG, w którym $c = 0$, czyli kolejne stany opisuj
 MCG o parametrach $M$ oraz $a$ oznaczamy $MCG(M, a)$. Aby $MCG(M,a)$ mogło mieć dobre własności $M$ powinno być liczbą pierwszą lub jej potęgą, $a$ powinno być generatorem grupy $\mathbb{Z}_M^*$, a ziarno $s_0$ powinno być względnie pierwsze z $M$. 
 
 \subsection*{GLCG}
-Wyżej opisane GLP dzielą pewną wadę -- mają stosunkowo krótkie okresy. W przypadku gdy potrzebujemy dłuższych okresów przydatne mogą być uogólnione LCG (z ang. \textit{generalized linear congruential generator}). Postępują one zgodnie z rekurencją
+Wyżej opisane GLP dzielą pewną wadę -- mają stosunkowo krótkie okresy. W przypadku gdy potrzebujemy dłuższych okresów przydatne mogą być uogólnione LCG (od ang. \textit{generalized linear congruential generator}). Postępują one zgodnie z rekurencją
 \begin{equation}
  \label{eq:glcg}
  x_n = (a_1 x_{n-1} + a_2 x_{n-2} + \ldots + a_k x_{n-k} + c) \mod M.
@@ -492,29 +492,52 @@ Możemy teraz zdefiniować mieszany generator w taki sposób, aby ciąg jego sta
 \[ s_n = \langle s_{1,n}, s_{1,n}, \ldots s_{k,n} \rangle\]
 Niech ponadto $d_j$ oznacza okres $j$-tego ,,składowego'' generatora. Jak pokazał L'Ecuyer (\cite{lecuyer}, Lemma 2) mieszany generator ma okres $d = NWW(d_1, d_2,\ldots,d_k)$.
 
-Szczególnym przypadkiem generatorów mieszanych są \textbf{CMCG} (z ang. \textit{combined multiplicative congruential generator}). Składa się on $k$ generatorów $MCG(M_j, a_j)$, czyli funkcją przejścia jest
+Szczególnym przypadkiem generatorów mieszanych są \textbf{CMCG} (od ang. \textit{combined multiplicative congruential generator}). Składa się on $k$ generatorów $MCG(M_j, a_j)$, czyli funkcją przejścia jest
 \[ s_{j,n} = a_j s_{j,n-1} \mod M_j. \]
 Wyjście generatora mieszanego jest
 \[ g(s_n) = \left( \sum_{j=1}^{k} (-1)^{j-1} s_{j,n} \right) \mod M_1 - 1\]
 Ponadto jeśli liczby $\frac{M_j-1}{2}$ są względnie pierwsze, to CMCG ma optymalny okres wynoszący $\frac{1}{2^k}(M_1-1)\cdot \ldots \cdot (M_k-1)$.
 
+\subsection*{LFSR}
+LFSR (od ang. \textit{Linear feedback shift register}) to, z grubsza rzecz ujmując, generator produkujący liczby pseudolosowe na podstawie obwód bramek logicznych. Stanem tych generatorów jest sekwencja bitów, które przekazywane są na wejście wybranych bramek. Wyjścia tych bramek stanowią wejście innych bramek, te z kolei przekazują swoje wyjścia kolejnym bramkom, itd. Wyjścia wybranych bramek mogą zmieniać stan generatora lub być zwracane jako rezultat pracy generatora. 
+
 \subsection*{Mersenne Twister}
-{\bigskip \color{red} \LARGE{TODO!}}
+Mersenne Twister (MT19937) został zaproponowany przez Matsumoto i Nashimurę w \cite{twister}. Nie jest to wprawdzie klasa generatorów, ale przykład konkretnego GLP, jednak ze względu na jego ogromną popularność warto go opisać. Jest on standardowym generatorem w wielu narzędziach programistycznych, między innymi w R, Python, MATLAB, Julia. Został dołączony również do standardowej biblioteki C++11.
 
+Stan generatora opisany jest przez 624 32-bitowe liczby
+\[ x_k, x_{k+1}, \ldots x_{k+623} \]
+Kolejne stany otrzymujemy ze wzoru (zapis $d[i..j]$ oznacza bity o indeksach od $i$ do $j$ w liczbie $d$, zaś symbol $\oplus$, to operacja XOR na kolejnych bitach):
+\[ x_{k+624} = \begin{cases}
+      x_{397+k}\oplus (0, x_k[0], x_{k+1}[1..30]) &\mbox{if } x_{k+1}[31] = 0 \\ 
+      x_{397+k}\oplus (0, x_k[0], x_{k+1}[1..30]) \oplus a & \mbox{if } x_{k+1}[31] = 1.
+    \end{cases} \]
+gdzie $a = (9908B0D)_{16}$. Przy $k$-tym wywołaniu MT19937 zwraca jako wyjście wartość $t(x_{623+k})$, przy czym
+\[ t(x) = y_3 \oplus (y_3 \gg 18), \]
+gdzie
+\begin{equation*} 
+\begin{split}
+ y_3 &= y_2 \oplus ((y_2 \ll 15)\ \&\ (EFC60000)_{16})\\
+ y_2 &= y_1 \oplus ((y_1 \ll 7)\ \&\ (9D2C5680)_{16})\\
+ y_1 &= x \oplus (x \gg 11)
+\end{split}
+\end{equation*}
 
-\section{Generowanie ciągów bitów}
+Generator uzyskany w ten sposób ma okres równy $2^{19937}-1$, co wyjaśnia jego skrótową nazwę.
+
+\section{Generowanie sekwencji bitów}
 Komputery operują tylko i wyłącznie na ciągach bitów, dlatego wyjście każdego programu, w szczególności GLP, może być traktowane jako ciąg zerojedynkowy. My potrzebujemy jednak ciągów specyficznych: każdy bit musi być generowany niezależnie i z jednakowym prawdopodobieństwem przyjmować wartości zero i jeden. Dlatego dla wygody języka wprowadźmy poniższy termin.
 \begin{mydef}
  \textit{Idealnym ciągiem losowych bitów} nazywamy proces Bernoulliego z prawdopodobieństwem sukcesu $p = \frac{1}{2}$
 \end{mydef}
-\noindent Otrzymanie takiego ciągu z GLP nie jest tak trywialne, jak to się może w pierwszej chwili wydawać.
+
+Poniżej opisujemy jak zmienić generator liczb pseudolosowych w ,,generator pseudolosowych ciągów zerojedynkowych''.
 
 \begin{algorithm}
  \begin{algorithmic}[1]
   \Function{GenerujCiągBitów}{\texttt{glp}}
     \State $s \gets \epsilon$
-    \While {$s$ nie jest wystarczająco długi}
       \Comment{{\color{comment} $\epsilon$ to słowo puste}}
+    \While {$s$ nie jest wystarczająco długi}
       \State $a \gets$ następna liczba z \texttt{glp}
       \State $b \gets$ binarny zapis $a$ na $\ceil{\log_2 M}$ bitach
       \State $s \gets s \odot b$
@@ -523,7 +546,7 @@ Komputery operują tylko i wyłącznie na ciągach bitów, dlatego wyjście każ
     \State \Return $s$.
   \EndFunction
  \end{algorithmic}
- \caption{Prosta metoda generowania bitów z GLP.}
+ \caption{Generowanie sekwencji bitów przy użyciu GLP.}
  \label{alg:GenerateBitSequence}
 \end{algorithm}
 
@@ -535,7 +558,7 @@ Komputery operują tylko i wyłącznie na ciągach bitów, dlatego wyjście każ
 %  \item Powtarzamy aż do otrzymynia pożądanie długiego ciągu bitów.
 % \end{enumerate}
 
-GLP zazwyczaj wykonują obliczenia modulo $M$, gdzie $M$ jest pewną stałą ustaloną dla danego generatora. Przy pojedynczym wywołaniu generatora otrzymujemy liczbę całkowitą ze zbioru $\bar{M} = \{0, 1, \ldots, M-1 \}$. Kolejne wywołania powinny dawać niezależne wyniki. Aby wykorzystać GLP do wygenerowania idealnego ciągu losowych bitów możemy użyć Algorytmu \ref{alg:GenerateBitSequence}. Jeśli $M$ jest potęgą dwójki, to zadziała on dobrze, mamy bowiem
+Mamy dany GLP generujący liczby całkowite ze zbioru $\bar{M} = \{0, 1, \ldots, M-1 \}$. Kolejne wywołania powinny dawać niezależne wyniki. Aby wykorzystać GLP do wygenerowania idealnego ciągu losowych bitów możemy użyć Algorytmu \ref{alg:GenerateBitSequence}. Jeśli $M$ jest potęgą dwójki, to zadziała on dobrze, mamy bowiem
 \begin{lemat}
  Niech $M = 2^k$. Jeżeli GLP w każdym kroku generuje liczby niezależnie i jednostajnie w zbiorze $\bar{M}$, to Algorytm \ref{alg:GenerateBitSequence} generuje idealny ciąg losowych bitów.
 \end{lemat}
@@ -545,9 +568,24 @@ GLP zazwyczaj wykonują obliczenia modulo $M$, gdzie $M$ jest pewną stałą ust
 
 Jednak jeśli $M$ nie jest potęgą dwójki, to procedura nie działa -- przykładowo dla $M=5$ w każdym kroku doklejamy jedną z sekwencji $\{000, 001, 010, 011, 100\}$. Wówczas w wygenerowanym ciągu spotkanie jedynki jest mniej prawdopodobne niż zera -- jedynki stanowią tylko około $\frac{1}{3}$ wszystkich wygenerowanych bitów. Ponadto nie ma niezależności -- wystąpienie jedynki na bicie o indeksie podzielnym przez 3 oznacza, że kolejne dwa bity będą zerami.
 
-Jak widać, gdy $M$ nie jest postaci $2^k$ nie możemy w wyjściowym ciągu tak po prostu umieścić binarnego zapisu wygenerowanej liczby. Moglibyśmy przykładowo w generowanym ciągu umieszczać najmniej istotny bit liczby otrzymanej z GLP. Jeśli przy każdym wywołaniu GLP generuje niezależne liczby, to uzyskane bity również będą niezależne. Ponadto prawdopodobieństwo otrzymania jedynki wyniesie w przybliżeniu \textonehalf (dla $M$ parzystego jest to dokładnie \textonehalf, dla $M$ nieparzystego $\frac{M-1}{2M}$, co jest pomijalnym odstępstwem od \textonehalf). Zatem znalezienie nieprawidłowości w tak wygenerowanym ciągu oznaczałoby, że wykorzystany GLP jest wadliwy. Istnieje jednak możliwość, że wada generatora ujawnia się na innych bitach. W takiej sytuacji tego nie wykryjemy. Mamy tu więc do czynienia z dwoma problemami. Z jednej strony chcielibyśmy w testach uwzględnić jak najwięcej cech liczb otrzymanych z GLP. Z drugiej strony wiemy, że na bardziej znaczących bitach częściej pojawiają się zera, co mogłoby prowadzić do zaburzenia wyników testów. Dlatego zazwyczaj do wyjściowego ciągu bitów bierzemy jeden bajt wygenerowanej liczby. Wydaje się to być rozsądnym kompromisem.
+Jak widać, gdy $M$ nie jest postaci $2^k$ nie możemy w wyjściowym ciągu tak po prostu umieścić binarnego zapisu wygenerowanej liczby. Na najbardziej znaczących bitach przeważają zera. Prostym obejściem tego problemu jest ograniczenie się do mniej znaczących bitów generowanych liczb (jak się okazuje do stwierdzenia wadliwości niektórych generatorów wystarczy patrzeć na najmniej znaczący bit). One również nie mają idealnego rozkładu, co można łatwo zauważyć licząc prawdopodobieństwo wystąpienia jedynki na najmniej znaczącym bicie, jednak odstępstwo jest jednak stosunkowo niewielkie.
 
-{\bigskip \color{red} \LARGE{TODO!} Pewnie wypada napisać tu trochę więcej}
+Inne podejście przedstawia Algorytm \ref{alg:GenerateBitSequence2}. Jego dodatkową zaletą jest możliwość modyfikacji, tak by działał dla GLP zwracających liczby z odcinka $(0,1)$.
+\begin{algorithm}
+ \begin{algorithmic}[1]
+  \Function{GenerujCiągBitów}{\texttt{glp}, $n$}
+    \State $s \gets \epsilon$
+    \While {$s$ nie jest wystarczająco długi}
+      \State $a \gets$ następna liczba z \texttt{glp}
+      \State $b \gets$ $n$ pierwszych bitów rozwinięcia dwójkowego $\frac{a}{M}$
+      \State $s \gets s \odot b$
+     \EndWhile
+    \State \Return $s$.
+  \EndFunction
+ \end{algorithmic}
+ \caption{Generowanie sekwencji bitów przy użyciu GLP.}
+ \label{alg:GenerateBitSequence2}
+\end{algorithm}
 
 \section{Popularne metody testowania GLP}
 Poniżej przedstawiamy kilka wybranych metod testowania GLP. Lista z pewnością jest daleka od kompletności, zwłaszcza, że zagadnienie testowania GLP cieszy się dużą popularnością.
@@ -589,15 +627,28 @@ Wiele faktów w rachunku prawdopodobieństwa opiera się na ciągach niezależny
 \begin{itemize}
  \item \textbf{Test odstępów.} Dla ustalonego przedziału $(\alpha, \beta)$ mierzymy czasy oczekiwania na kolejne $U_i$ wpadające do tego przedziału. Otrzymane wartości powinny mieć rozkład geometryczny, co sprawdzamy testem $\chi^2$.
  \item \textbf{Test permutacyjny.} Podzielmy ciąg $(U_i)$ na bloki jak w (\ref{eq:u_blok}),  przy niezbyt dużym $t$. W każdym bloku zachodzi jedno z $t!$ możliwych uporządkowań. Rozkład na uporządkowaniach powinien być jednostajny, co ponownie weryfikujemy testem $\chi^2$.
- \item \textbf{Test kolizji.} Stanowi rozwiązanie, gdy mamy $n$ obserwacji wpadających $m$ ,,pudełek'', przy czym $n < m$. Jak powiedzieliśmy wcześniej, w takiej sytuacji nie możemy zastosować testu $\chi^2$. Jednak da się wyliczyć teoretyczne prawdopodobieństwo otrzymania $k$ kolizji (kolizją jest trafienie obserwacji do pudełka, w którym jest już inna obserwacja). Jeśli zaobserwowana liczba kolizji nie mieści się w pewnych ramach, to możemy stwierdzić, że ciąg nie jest losowy.
+ \item \textbf{Test kolizji.} Stanowi rozwiązanie, gdy mamy $n$ obserwacji wpadających do $m$ ,,pudełek'', przy czym $n < m$. Jak powiedzieliśmy wcześniej, w takiej sytuacji nie możemy zastosować testu $\chi^2$. Jednak da się wyliczyć teoretyczne prawdopodobieństwo otrzymania $k$ kolizji (kolizją jest trafienie obserwacji do pudełka, w którym jest już inna obserwacja). Jeśli zaobserwowana liczba kolizji nie mieści się w pewnych ramach, to możemy stwierdzić, że ciąg nie jest losowy.
 \end{itemize}
 Metody opisane tutaj mają pewną zaletę w stosunku do metod z poprzedniego paragrafu -- niejawnie testują również niezależność.
+
+\subsection*{Zestawy testów}
+Rozwinięciem podejścia z poprzedniego paragrafu jest tworzenie paczek testowych. Zawierają one kilkanaście lub więcej testów opartych o fakty rachunku prawdopodobieństwa, które powinien spełniać idealny ciąg losowych bitów. Znane przykłady to:
+\begin{itemize}
+ \item \textbf{Diehard tests.} Zestaw opracowany przez George'a Marsaglia w 1996 r. Obecnie uważany już za przestarzały.
+ \item \textbf{TestU01.} Następca zestawu Diehard, który opracowali Pierre L’Ecuyer oraz Richard Simard w 2007 r.
+ \item \textbf{NIST Test Suite.} Zestaw opracowany przez organizację \textit{National Institute of Standards and Technology} i ciągle rozwijany. 
+\end{itemize}
+ Powiemy więcej o tym ostatnim zestawie. 
+ 
+Jakość GLP rozstrzygana jest w systematyczny sposób. Dla każdego spośród kilkunastu testów w NIST postępujemy następująco. Generujemy $m$ sekwencji bitów. Po kolei dla każdej z nich przeprowadzamy wybrany test na ustalonym poziomie istotności $\alpha = 0.01$. Test zwraca nam $p$-wartość, i jeżeli $p > \alpha$, to uznajemy, że dany ciąg bitów jest losowy. Przyjmuje się, że GLP zaliczył wykonywany test jeżeli około 97\% lub więcej sekwencji zostało uznanych za losowe (oczywiście nie można wymagać, żeby wszystkie ciągi zostały uznane za losowe, bo nawet spośród idealnych ciągów losowych bitów około $\alpha$ z nich zostanie odrzucona).
+
+Takie podejście wydaje się rozsądne, ma jednak zasadniczą wadę. Wyobraźmy sobie, że mamy znakomity GLP $g_1$. Na jego podstawie tworzymy nowy GLP $g_2$ w taki sposób, że co setny ciąg bitów otrzymanych z $g_2$ to sekwencja samych zer, a w pozostałych przypadkach $g_2$ deleguje wygenerowanie ciągu do $g_1$. NIST Test Suite prawdopodobnie uznałby generator $g_2$ za dobry. Metoda opisana w części \ref{czesc:metoda} jest pozbawiona tej wady.
 
 \subsection*{Test spektralny}
 Testowi spektralnemu Donald Knuth poświęcił kilkanaście stron w swoim dziele \cite{knuth}, czego nie sposób tutaj streścić. Idea polega na spostrzeżeniu, że punkty w $t$-wymiarowej przestrzeni, utworzone z kolejnych wyrazów ciągu $(U_i)$ wygenerowanego przez LCG, leżą na stosunkowo niewielkiej liczbie $(t-1)$-wymiarowych hiperpłaszczyzn. Zagłębiając się w ten temat można dojść do dość skomplikowanej metody testowania LCG. Jednak w niektórych przypadkach widać gołym okiem, że generator jest zły. Takim przykładem jest niechlubny RANDU (jest to $MCG(2^{31}, 2^{16}+3)$). Na Rysunku \ref{fig:spectral} przedstawiono punkty w przestrzeni otrzymane z tego generatora. Widać wyraźnie, że układają się one na 15 płaszczyznach.
 \begin{figure}[!ht]
  \centering
- \includegraphics[scale=0.6]{obrazki/spectraltest.pdf}
+ \includegraphics[scale=0.4]{obrazki/spectraltest.pdf}
  \caption{Ilustracja rozmieszczenia w przestrzeni punktów generowanych przez RANDU. Każdy punkt został utworzony z trzech kolejnych liczb otrzymanych z generatora i przeskalowanych na odcinek $(0,1)$}
  \label{fig:spectral}
 \end{figure}
@@ -624,21 +675,17 @@ Rzadko kiedy jesteśmy w stanie znaleźć dokładną wartość złożoności ła
 \subsection*{Zagadnienie ruiny gracza}
 Bardzo interesująca metoda testowania GLP została przedstawiona w pracy \cite{kim-choe}. Rozważane jest błądzenie po grupie $\mathbb{Z}_n$. Autorzy badają czas dojścia do stanu $0$, co odpowiada zbiciu majątku wysokości $n$ lub bankructwu gracza ze znanego zagadnienia. W pracy opisane są trzy warianty zastosowanej metody, tutaj przedstawiamy podstawową z nich.
 
-Ustalmy $p \in (0,1)$. Ciąg $(U_i)$ otrzymany z generatora wykorzystywany jest do poruszania się po grupie $\mathbb{Z}_n$. Jeśli w kroku $i$-tym byliśmy w stanie $s$, to przechodzimy do stanu $s+1$, gdy $U_{i+1} < p$, a do $s-1$ w przeciwnym przypadku. Dla każdego $x \in \mathbb{Z}_n$, $x \neq 0$ niech $T_x$ oznacza czas dojścia do $0$ ze stanu $x$. $N$ krotnie rozpoczynamy błądzenie po grupie z punktu $x$. W ten sposób otrzymujemy $N$ replikacji zmiennej $T_x$. Oznaczmy ich średnią przez $\overline{T}_x$. Niech $\mu$ oraz $\sigma^2$ oznaczają wartość oczekiwaną oraz wariancję $T_x$, gdy prawdopodobieństwa przejść do stanów $s+1$ oraz $s-1$ wynoszą odpowiednio $p$ oraz $1-p$. Niech
+Ustalmy $p \in (0,1)$. Ciąg $(U_i)$ otrzymany z generatora wykorzystywany jest do poruszania się po grupie $\mathbb{Z}_n$. Jeśli w kroku $i$-tym byliśmy w stanie $s$, to przechodzimy do stanu $s+1$, gdy $U_{i+1} < p$, a do $s-1$ w przeciwnym przypadku. Dla każdego $x \in \mathbb{Z}_n$, $x \neq 0$ niech $T_x$ oznacza czas dojścia do $0$ ze stanu $x$. $N$ krotnie rozpoczynamy błądzenie po grupie z punktu $x$. W ten sposób otrzymujemy $N$ replikacji zmiennej $T_x$. Oznaczmy ich średnią przez $\overline{T}_x$. Niech $\mu$ oraz $\sigma^2$ oznaczają wartość oczekiwaną oraz wariancję $T_x$, gdy prawdopodobieństwa przejść do stanów $s+1$ oraz $s-1$ wynoszą odpowiednio $p$ oraz $1-p$. Wartości $\mu$ i $\sigma^2$ można wyznaczyć teoretycznie. Niech
 \[ Z_x = \frac{\overline{T}_x - \mu}{\sigma \sqrt{N}}. \]
 Przy założeniu hipotezy, o niezależności i rozkładzie jednostajnym zmiennych $(U_i)$, statystyka $Z_x$ ma w przybliżeniu rozkład normalny $\mathcal{N}(0,1)$. W związku z tym przy dużych wartościach $|Z_x|$ należy stwierdzić, że generator nie przeszedł testu w punkcie $x$. 
-
-
-\subsection*{NIST}
-
 
 \subsection*{Błądzenie przypadkowe}
 Testom opartym na własnościach błądzenia przypadkowego poświęcone są kolejne dwie części pracy.
 
 \chapter{Metoda testowania}
 \label{czesc:metoda}
-W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do testowania GLP. W tej części pokazujemy jak zastosować ją w praktyce.
-Na początek omawiamy jak wykorzystać GLP do generowania sekwencji bitów. Następnie opisujemy w jaki sposób sprawdzić czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy nową metodę opartą o prawo arcusa sinusa. W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
+W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do testowania GLP. W tej części pokazujemy jak zastosować ją w praktyce. Opisujemy w jaki sposób sprawdzać czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy podobną metodę opartą o prawo arcusa sinusa.
+%W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
 
 
 
@@ -646,7 +693,7 @@ Na początek omawiamy jak wykorzystać GLP do generowania sekwencji bitów. Nast
 
 Ogólna idea testów GLP, którą stosujemy w tej pracy nie jest skomplikowana. Metoda polega na obliczeniu pewnych charakterystyk ciągów wygenerowanych przez GLP i porównaniu ich empirycznych rozkładów z rozkładami, które są znane dla idealnego ciągu losowych bitów.
 
-Przykładowo, w części poświęconej prawu arcusa sinusa uzasadniliśmy, że bardziej prawdopodobna jest długa przewaga liczby jedynek nad liczbą zer niż równomierny rozkład prowadzenia. Jeśli generator sztucznie wyrównuje liczby zer i jedynek, to zauważymy odstępstwa od tej reguły. Zgodność z prawem arucsa sinusa sprawdzają testy oparte o zdefiniowaną poniżej charakterystykę $\Sasin{n}$.
+Przykładowo, w części poświęconej prawu arcusa sinusa uzasadniliśmy, że bardziej prawdopodobna jest długa przewaga liczby jedynek nad liczbą zer niż równomierny rozkład prowadzenia. Jeśli generator sztucznie wyrównuje częstość zer i jedynek, to zauważymy odstępstwa od tej reguły. Zgodność z prawem arucsa sinusa sprawdzają testy oparte o zdefiniowaną poniżej charakterystykę $\Sasin{n}$.
 
 Podobnie ktoś mógłby pomyśleć, że czymś pozytywnym byłyby niewielkie różnice między liczbą jedynek i zer w ciągu bitów otrzymanym z GLP. Moglibyśmy zdecydować się na jakąś ,,rozsądną'' stałą, powiedzmy 100, i uznać, że generator jest dobry jeśli różnica liczby zer i jedynek w ciągu nie przekroczy 100. Wszak duże różnice mogłyby sugerować, że mamy różne prawdopodobieństwa wystąpienia zer i jedynek. Jednak prawo iterowanego logarytmu pokazuje, że to rozumowanie jest błędne. \emph{Należy} spodziewać się fluktuacji i odstępstw od zera, a ich brak oznacza, że GLP nie generuje idealnego ciągu losowych bitów. Tę obserwację wykorzystują testy opartę o charakterystykę $\Slil{n}$.
 
@@ -975,6 +1022,8 @@ Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów
     D. Knuth, \emph{The Art of Computer Programming volume 2: Seminumerical algorithms (2nd ed.)}, Addison-Wesley, 1981
   \bibitem{lecuyer}
     P. L'Ecuyer, \emph{Efficient and Portable Combined Random Number Generator}, Communications of the ACM 31, 1988, s. 742–749, 774.
+  \bibitem{twister}
+    M. Matsumoto, T. Nishimura, \emph{Mersenne twister: a 623-dimensionally equidistributed uniform pseudo-random number generator}, ACM Transactions on Modeling and Computer Simulation 8 (1), 1998, s. 3–30.
  \bibitem{wang-nic}
     Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, Computers \& Security, 53, 44--64, 2015
 
