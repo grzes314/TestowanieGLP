@@ -74,6 +74,13 @@
 \theoremstyle{definition}
 \newtheorem{mydef}{Definicja}[chapter]
 
+
+\newenvironment{nscenter}
+ {\parskip=0pt\par\nopagebreak\centering}
+ {\par\noindent\ignorespacesafterend}
+
+ 
+ 
 \title{Testowanie generatorów liczb pseudolosowych}
 \author{Grzegorz Łoś}
 
@@ -542,12 +549,97 @@ Jak widać, gdy $M$ nie jest postaci $2^k$ nie możemy w wyjściowym ciągu tak 
 
 {\bigskip \color{red} \LARGE{TODO!} Pewnie wypada napisać tu trochę więcej}
 
-\section{Znane metody testowania GLP}
+\section{Popularne metody testowania GLP}
+Poniżej przedstawiamy kilka wybranych metod testowania GLP. Lista z pewnością jest daleka od kompletności, zwłaszcza, że zagadnienie testowania GLP cieszy się dużą popularnością.
+
+Do testów używany jest ciąg liczb wygenerowanych przez GLP. Poniżej czasem będzie nam wygodnie przyjmować, że jest to ciąg liczb całkowitych nieujemnych
+\[ X_1, X_2, X_3, \ldots \]
+pretendujący do miana ciągu niezależnie i równomiernie rozłożonego w zbiorze $\bar{M}$, a czasem, że jest to ciąg
+\[ U_1, U_2, U_3, \ldots \]
+pretendujący do miana ciągu niezależnie i równomiernie rozłożonego na odcinku $(0,1)$.
+
+\subsection*{Zgodność z rozkładem jednostajnym}
+Pierwszym nasuwającym się sposobem sprawdzenia jakości liczb generowanych przez GLP jest zastosowanie znanego aparatu statystycznego. Możemy użyć testów zgodności z rozkładem jednostajnym, np. \textbf{testu Kołmogorowa-Smirnowa}. Niech $n$ będzie długością ciągu $(U_i)$. Dystrybuanta empiryczna jest zdefiniowana jako
+\[ F_n(t) = \frac{1}{n} \sum_{i=1}^n \mathbbm{1}(U_i < t). \]
+Niech
+\[ D_n = \sup_{0 \leq t \leq 1} |F_n(t) - F(t)|. \]
+Zauważmy, że obliczenie $D_n$ nie stanowi problemu, gdyż $F_n$ jest funkcją schodkową zmieniającą wartość w punktach $U_1, U_2,\ldots$. Twierdzenie Kołmogorowa mówi, że $\sqrt{n} D_n \stackrel{D}{\Conv} K$, gdzie $K$ jest zmienną losową o rozkładzie Kołmogorowa. Korzystając z tablic lub pakietów statystycznych możemy znaleźć $p$-wartość tego testu.
+
+Można też użyć \textbf{testu $\chi^2$ Pearsona}. Polega on na podzieleniu odcinka na $r$ części. Niech $E_i$ będzie oczekiwaną liczbą zmiennych $U_i$, których wartość wpada to $i$-tego odcinka, zaś $O_i$ obserwowaną liczbą.
+
+Wówczas statystyka
+\begin{equation}
+ \label{eq:chisq}
+ T = \sum_{i=1}^r \frac{(O_i - E_i)^2}{E_i} 
+\end{equation}
+dąży do rozkład $\chi^2$ z $(r-1)$ stopniami swobody, oznaczany $\chi^2(r-1)$. Tak jak w przypadku testu Kołmogorowa-Smirnowa możemy poznać $p$-wartość testu korzystając z odpowiednich narzędzi.
+
+Wiele testów zgodności opracowano dla rozkładu normalnego, do najbardziej znanych należą \textbf{test Shapiro-Wilka}, \textbf{test Jarque-Bera}, \textbf{test Andersona-Darlinga}. Aby móc z nich skorzystać, wystarczy zmapować ciąg $(U_i)$ na ciąg $(N_i)$ zmiennych losowych o rozkładzie normalnym, np. przy użyciu transformacji Boxa-Mullera.
+
+Powyższe testy sprawdzają jedynie zgodność z rozkładem jednostajnym. Teoretycznie można ponownie wykorzystać test $\chi^2$ do sprawdzenia niezależności. Dla ustalonego $t$ dzielimy ciąg $(U_i)$ na bloki 
+\begin{equation}
+  \label{eq:u_blok}
+ (U_1,\ldots,U_t), (U_{t+1},\ldots,U_{2t}), \ldots
+\end{equation}
+
+Otrzymujemy w ten sposób obserwacje, które powinny być jednostajnie rozłożone w hiperkostce $(0,1)^t$. Możemy ją podzielić na mniejsze kostki i skorzystać ze statystyki (\ref{eq:chisq}), aby stwierdzić czy wpada do nich odpowiednio wiele obserwacji. W praktyce jednak oczekiwana liczba obserwacji w pojedynczej kostce spada tak szybko do zera, że $T$ nie jest dobrze przybliżane przez rozkład~$\chi^2$.
+
+\subsection*{Zgodność z twierdzeniami rachunku prawdopodobieństwa}
+Wiele faktów w rachunku prawdopodobieństwa opiera się na ciągach niezależnych zmiennych losowych o jednakowym rozkładzie. Dzięki temu na podstawie ciągów $(X_i)$ lub $(U_i)$ jesteśmy w stanie otrzymać kolejne zmienne losowe, których teoretyczne rozkłady są znane. W \cite{knuth} zaproponowanych jest kilka praw, które można wykorzystać w ten sposób. Oto niektóre z nich:
+\begin{itemize}
+ \item \textbf{Test odstępów.} Dla ustalonego przedziału $(\alpha, \beta)$ mierzymy czasy oczekiwania na kolejne $U_i$ wpadające do tego przedziału. Otrzymane wartości powinny mieć rozkład geometryczny, co sprawdzamy testem $\chi^2$.
+ \item \textbf{Test permutacyjny.} Podzielmy ciąg $(U_i)$ na bloki jak w (\ref{eq:u_blok}),  przy niezbyt dużym $t$. W każdym bloku zachodzi jedno z $t!$ możliwych uporządkowań. Rozkład na uporządkowaniach powinien być jednostajny, co ponownie weryfikujemy testem $\chi^2$.
+ \item \textbf{Test kolizji.} Stanowi rozwiązanie, gdy mamy $n$ obserwacji wpadających $m$ ,,pudełek'', przy czym $n < m$. Jak powiedzieliśmy wcześniej, w takiej sytuacji nie możemy zastosować testu $\chi^2$. Jednak da się wyliczyć teoretyczne prawdopodobieństwo otrzymania $k$ kolizji (kolizją jest trafienie obserwacji do pudełka, w którym jest już inna obserwacja). Jeśli zaobserwowana liczba kolizji nie mieści się w pewnych ramach, to możemy stwierdzić, że ciąg nie jest losowy.
+\end{itemize}
+Metody opisane tutaj mają pewną zaletę w stosunku do metod z poprzedniego paragrafu -- niejawnie testują również niezależność.
+
+\subsection*{Test spektralny}
+Testowi spektralnemu Donald Knuth poświęcił kilkanaście stron w swoim dziele \cite{knuth}, czego nie sposób tutaj streścić. Idea polega na spostrzeżeniu, że punkty w $t$-wymiarowej przestrzeni, utworzone z kolejnych wyrazów ciągu $(U_i)$ wygenerowanego przez LCG, leżą na stosunkowo niewielkiej liczbie $(t-1)$-wymiarowych hiperpłaszczyzn. Zagłębiając się w ten temat można dojść do dość skomplikowanej metody testowania LCG. Jednak w niektórych przypadkach widać gołym okiem, że generator jest zły. Takim przykładem jest niechlubny RANDU (jest to $MCG(2^{31}, 2^{16}+3)$). Na Rysunku \ref{fig:spectral} przedstawiono punkty w przestrzeni otrzymane z tego generatora. Widać wyraźnie, że układają się one na 15 płaszczyznach.
+\begin{figure}[!ht]
+ \centering
+ \includegraphics[scale=0.6]{obrazki/spectraltest.pdf}
+ \caption{Ilustracja rozmieszczenia w przestrzeni punktów generowanych przez RANDU. Każdy punkt został utworzony z trzech kolejnych liczb otrzymanych z generatora i przeskalowanych na odcinek $(0,1)$}
+ \label{fig:spectral}
+\end{figure}
+
+\subsection*{Złożoność Kołmogorowa}
+Zacznijmy od przykładu. Rozważmy ciągi binarne długości 32
+\begin{nscenter}
+\texttt{01010101010101010101010101010101} 
+\end{nscenter}
+oraz
+\begin{nscenter}
+\texttt{00110111001101001101101000110110}. 
+\end{nscenter}
+Choć wylosowanie obydwu z nich jest równie prawdopodobne, ten drugi uznajemy za bardziej ,,losowy''. Dzieje się tak dlatego, że pierwszy ciąg można jednoznacznie opisać w znacznie mniejszej liczbie znaków:
+\begin{nscenter}
+\texttt{16$\times$01},
+\end{nscenter}
+zaś najkrótszym opisem drugiego ciągu jest prawdopodobnie przepisanie go całego.
+
+Tego typu intuicje próbujemy wyjaśniać za pomocą, tzw. złożoności Kołmogorowa. Służy ona do mierzenia stopnia skomplikowania ciągów znaków. Ustalmy dowolny język programowania $L$. Złożonością Kołmogorowa łańcucha znaków $s$ jest długość najkrótszego programu $P$ w języku $L$, takiego że $P$ wypisuje $s$.
+
+Rzadko kiedy jesteśmy w stanie znaleźć dokładną wartość złożoności łańcucha $s$. Dlatego może się wydawać, że powyższe podejście jest czysto teoretyczne. Okazuje się jednak, że można złożoność $s$ oszacować. Niech $P$ będzie programem implementującym ustalony algorytm kompresji, a $\tilde{P}$ odpowiadającym mu programem dekompresji. Ponadto niech $\tilde{s}$ będzie skompresowanym łańcuchem $s$. Wówczas złożoność łańcucha $s$ jest oszacowana z góry przez sumę długości $\tilde{P}$ oraz $\tilde{s}$. Odrzucamy hipotezę o losowości $s$, gdy otrzymana wartość jest znacznie mniejsza od długości~$s$.
+
+\subsection*{Zagadnienie ruiny gracza}
+Bardzo interesująca metoda testowania GLP została przedstawiona w pracy \cite{kim-choe}. Rozważane jest błądzenie po grupie $\mathbb{Z}_n$. Autorzy badają czas dojścia do stanu $0$, co odpowiada zbiciu majątku wysokości $n$ lub bankructwu gracza ze znanego zagadnienia. W pracy opisane są trzy warianty zastosowanej metody, tutaj przedstawiamy podstawową z nich.
+
+Ustalmy $p \in (0,1)$. Ciąg $(U_i)$ otrzymany z generatora wykorzystywany jest do poruszania się po grupie $\mathbb{Z}_n$. Jeśli w kroku $i$-tym byliśmy w stanie $s$, to przechodzimy do stanu $s+1$, gdy $U_{i+1} < p$, a do $s-1$ w przeciwnym przypadku. Dla każdego $x \in \mathbb{Z}_n$, $x \neq 0$ niech $T_x$ oznacza czas dojścia do $0$ ze stanu $x$. $N$ krotnie rozpoczynamy błądzenie po grupie z punktu $x$. W ten sposób otrzymujemy $N$ replikacji zmiennej $T_x$. Oznaczmy ich średnią przez $\overline{T}_x$. Niech $\mu$ oraz $\sigma^2$ oznaczają wartość oczekiwaną oraz wariancję $T_x$, gdy prawdopodobieństwa przejść do stanów $s+1$ oraz $s-1$ wynoszą odpowiednio $p$ oraz $1-p$. Niech
+\[ Z_x = \frac{\overline{T}_x - \mu}{\sigma \sqrt{N}}. \]
+Przy założeniu hipotezy, o niezależności i rozkładzie jednostajnym zmiennych $(U_i)$, statystyka $Z_x$ ma w przybliżeniu rozkład normalny $\mathcal{N}(0,1)$. W związku z tym przy dużych wartościach $|Z_x|$ należy stwierdzić, że generator nie przeszedł testu w punkcie $x$. 
+
+
+\subsection*{NIST}
+
+
+\subsection*{Błądzenie przypadkowe}
+Testom opartym na własnościach błądzenia przypadkowego poświęcone są kolejne dwie części pracy.
 
 \chapter{Metoda testowania}
 \label{czesc:metoda}
-W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do tesotwania GLP. W tej części pokazujemy jak zastosować ją w praktyce.
+W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do testowania GLP. W tej części pokazujemy jak zastosować ją w praktyce.
 Na początek omawiamy jak wykorzystać GLP do generowania sekwencji bitów. Następnie opisujemy w jaki sposób sprawdzić czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy nową metodę opartą o prawo arcusa sinusa. W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
+
 
 
 \section{Zastosowanie błądzenia przypadkowego do testowania GLP}
@@ -877,10 +969,16 @@ Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów
     T. Hull, A. Dobell, \emph{Random number generators}, SIAM Rev, v.4, 1962, s. 230-254
  \bibitem{jak-szt}
     J. Jakubowski, R. Sztencel, \emph{Wstęp do teorii prawdopodobieństwa}, Script, Warszawa, Wydanie IV, 2010
+ \bibitem{kim-choe}
+    C. Kim, G.H. Choe, D.H. Kim, \emph{Tests of randomness by the gambler's ruin algorithm},  Applied Mathematics and Computation 199, 2008, s. 195-210
+ \bibitem{knuth}
+    D. Knuth, \emph{The Art of Computer Programming volume 2: Seminumerical algorithms (2nd ed.)}, Addison-Wesley, 1981
   \bibitem{lecuyer}
-    P. L'Ecuyer (1988). \emph{Efficient and Portable Combined Random Number Generator}, Communications of the ACM 31: 742–749, 774.
+    P. L'Ecuyer, \emph{Efficient and Portable Combined Random Number Generator}, Communications of the ACM 31, 1988, s. 742–749, 774.
  \bibitem{wang-nic}
-    Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, 2014
+    Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, Computers \& Security, 53, 44--64, 2015
+
+
  \bibitem{rorg}
     www.random.org
 \end{thebibliography}
