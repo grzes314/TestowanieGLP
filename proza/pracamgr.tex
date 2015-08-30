@@ -81,7 +81,7 @@
 
  
  
-\title{Testowanie generatorów liczb pseudolosowych}
+\title{Zastosowanie błądzenia przypadkowego do testowania generatorów liczb pseudolosowych}
 \author{Grzegorz Łoś}
 
 \pagestyle{fancy}
@@ -109,7 +109,7 @@ Instytut Matematyczny}\\
 \hspace*{6.5cm}dr. Pawła Lorka }\\
 \vfill
 \begin{center}
-{\large Wrocław 2015}\\
+{\large Wrocław, 26 sierpnia 2015}\\
 \end{center}
 
 \newpage
@@ -151,7 +151,7 @@ Jak napisaliśmy we wprowadzeniu, własności błądzenia przypadkowego (inaczej
 
 Wyjście generowane przez GLP zawsze można traktować jako ciąg zerojedynkowy. Dlatego ważnym pojęciem będzie dla nas ciąg niezależnych prób Bernoulliego (inaczej: proces Bernoulliego) $(B_i)_{i \in \mathbb{N}}$. Dla ustalonego $p \in [0,1]$ oznaczamy w ten sposób ciąg niezależnych zmiennych losowych o jednakowym rozkładzie, taki że
 \[ \Prob(B_1 = 1) = p = 1 - \Prob(B_1 = 0). \]
-Możemy postrzegać $i$-ty bit wygenerowany przez GLP jako wyniki $i$-tej próby Bernoulliego. Dobry generator powinien z takim samym prawdopodobieństwem losować 0 oraz 1, dlatego ograniczymy się do przypadku $p = \frac{1}{2}$.
+Możemy postrzegać $i$-ty bit wygenerowany przez GLP jako wynik $i$-tej próby Bernoulliego. Dobry generator powinien z takim samym prawdopodobieństwem losować 0 oraz 1, dlatego ograniczymy się do przypadku $p = \frac{1}{2}$.
 
 Często będzie nam wygodniej posługiwać się ciągiem prób $(X_i)_{i \in \mathbb{N}}$, który przyjmuje wartości -1 zamiast 0, czyli
 \[ X_i \stackrel{D}{=} 2 B_i -1. \]
@@ -406,12 +406,12 @@ W celu znalezienia $P_{2n}(x)$ dla $0 < x < \frac{1}{2}$ skorzystamy ze znanych 
 W ten sposób udowodniliśmy
 \begin{twier}[\textbf{Prawo arcusa sinusa}]
  Prawdopodobieństwo, że w $n$ krokach frakcja czasu $x$ ($0 \leq x \leq 1$), w której ustalony gracz ma przewagę (stan błądzenia przypadkowego jest dodatni), dąży przy $n \Conv \infty$ do
- \[  \int_0^x \frac{dt}{\sqrt{t(1-t)}} = \frac{2}{\pi}\arcsin(\sqrt{x}) \]
+ \[  \frac{1}{\pi} \int_0^x \frac{dt}{\sqrt{t(1-t)}} = \frac{2}{\pi}\arcsin(\sqrt{x}) \]
 \end{twier}
 
 Innymi słowy w bardzo długiej grze frakcja czasu $x$ spędzona ``na plusie'' ma rozkład arcusa sinusa. Oto jego podstawowe własności:
 \begin{itemize}
- \item gęstość $f(t) =  \frac{1}{\sqrt{t(1-t)}}$,
+ \item gęstość $f(t) =  \frac{1}{\pi \sqrt{t(1-t)}}$,
  \item dystrybuanta $F(t) =  \frac{2}{\pi}\arcsin(\sqrt{t})$,
  \item wartość oczekiwana: $\frac{1}{2}$,
  \item wariancja: $\frac{1}{8}$.
@@ -432,7 +432,8 @@ Ludzka intuicja silnie podpowiada, że w grze z symetryczną monetą, każdy z g
 Każdy intuicyjnie rozumie czym jest generator liczb pseudolosowych. Jednak dla pełności matematycznego opisu zaczniemy od przedstawienia jego ścisłej definicji. Przedstawiona tu teoria opiera się na książce \cite{asmussen}. Na jej podstawie opisujemy również kilka rodzajów generatorów liczb pseudolosowych. Sposób otrzymania z GLP ciągu bitów o dobrych własnościach również wymaga pewnego komentarza, o czym piszemy dalej. Na końcu tej części krótko omówimy znane metody testowania generatorów liczb pseudolosowych.
 
 \section{Definicja GLP}
-Istnieją metody otrzymania liczb ,,prawdziwie losowych''. Najprostszym sposobem jest wielokrotne rzucenie kostką do gry lub monetą i stablicowanie otrzymanych wyników. Lepszym sposobem jest obserwowanie emitowanych cząsteczek przez próbkę radioaktywnego pierwiastka -- uważa się, że rozkład radioaktywny jest dobrze modelowany przez proces Poissona. Kolejnym pomysłem jest wykorzystanie szumu atmosferycznego, z tej metody korzysta strona \cite{rorg}. Źródła takiej losowości są jednak zazwyczaj zbyt wolne, trudno dostępne lub mają pewne inherentne wady (moneta może być niesymetryczna, detektor cząstek nie rejestruje zgłoszeń o zbyt krótkim odstępie, itp.). Wynika stąd potrzeba utworzenia deterministycznych algorytmów które imitowałyby losowość. Takie algorytmy nazywamy generatorami liczb pseudolosowych. Aby były praktyczne, muszą być szybkie i obliczalne na zwykłych komputerach. Liczby przez nie generowane jedynie ,,udają'' losowe, dlatego nazywamy je pseudolosowymi.
+\label{sec:pop_gen}
+Istnieją metody otrzymania liczb ,,prawdziwie losowych''. Najprostszym sposobem jest wielokrotne rzucenie kostką do gry lub monetą i stablicowanie otrzymanych wyników. Lepszym sposobem jest obserwowanie emitowanych cząsteczek przez próbkę radioaktywnego pierwiastka -- uważa się, że rozkład radioaktywny jest dobrze modelowany przez proces Poissona. Kolejnym pomysłem jest wykorzystanie szumu atmosferycznego, z tej metody korzysta strona www.random.org. Źródła takiej losowości są jednak zazwyczaj zbyt wolne, trudno dostępne lub mają pewne inherentne wady (moneta może być niesymetryczna, detektor cząstek nie rejestruje zgłoszeń o zbyt krótkim odstępie, itp.). Wynika stąd potrzeba utworzenia deterministycznych algorytmów które imitowałyby losowość. Takie algorytmy nazywamy generatorami liczb pseudolosowych. Aby były praktyczne, muszą być szybkie i obliczalne na zwykłych komputerach. Liczby przez nie generowane jedynie ,,udają'' losowe, dlatego nazywamy je pseudolosowymi.
 \begin{mydef}
 \label{def:glp}
  Generator liczb pseudolosowych jest to piątka\footnote{Jest to nieco inna definicja niż w \cite{asmussen}, dostosowana do naszych potrzeb. W książce Asmussena przyjmuje się $V = [0,1]$, zaś zamiast $s_0$ w definicji znajduje się $\mu$ -- rozkład prawdopodobieństwa początkowego stanu.} $\langle E, V, s_0, f, g \rangle$, gdzie $E$ jest skończoną przestrzenią stanów, $V$ jest zbiorem wartości zwracanych przez generator, $s_0$ jest to tzw. ziarno, czyli początkowy stan w ciągu stanów $(s_i)_{i=0}^\infty$, funkcja $f:E \rightarrow E$ opisuje przejścia między kolejnymi stanami: $s_n = f(s_{n-1})$, zaś $g:E\rightarrow V$, odwzorowuje stan generatora w wartość przez niego zwracaną.
@@ -449,7 +450,7 @@ Generatory LCG (od ang. \textit{linear congruential generator}) zmieniają swój
  \label{eq:lcg}
  s_n = (a s_{n-1} + c) \mod M.
 \end{equation}
-Generator tej klasy jest określony przez moduł $M$, mnożnik $a$ oraz przyrost $c$, co oznaczamy $LCG(M,a,c)$. Zauważmy, że $LCG(M,a,c,b)$ spełnia definicję GLP z $E = \bar{M}$, $V = \bar{M}$, $f(x) = (a x + c) \mod M$ oraz $g(x) = x$.
+Generator tej klasy jest określony przez moduł $M$, mnożnik $a$ oraz przyrost $c$, co oznaczamy $LCG(M,a,c)$. Zauważmy, że $LCG(M,a,c)$ spełnia definicję GLP z $E = \bar{M}$, $V = \bar{M}$, $f(x) = (a x + c) \mod M$ oraz $g(x) = x$.
 
 Dobranie wartości $M, a, c$ tak by generator miał długi okres nie jest łatwym zadaniem. Z pomocą przychodzi
 \begin{twier}
@@ -464,6 +465,7 @@ Dobranie wartości $M, a, c$ tak by generator miał długi okres nie jest łatwy
 
 Zauważmy jeszcze, że znalezienie LCG o pełnym okresie nie gwarantuje, że generator będzie dobrej jakości. Łatwo zauważyć następujący
 \begin{fakt}
+ \label{fakt:lcg_okres}
  Niech $M = 2^k$. Wówczas $d$ najmniej istotnych bitów $LCG(M,a,c)$ ma okres równy co najwyżej $2^d$.
 \end{fakt}
 \noindent W tym przypadku nie ma więc mowy o niezależności liczb generowanych przez LCG. Niektóre pakiety korzystające z LCG obchodzą ten problem zwracając tylko najbardziej znaczące bity wygenerowanych liczb.
@@ -588,6 +590,8 @@ Inne podejście przedstawia Algorytm \ref{alg:GenerateBitSequence2}. Jego dodatk
 \end{algorithm}
 
 \section{Popularne metody testowania GLP}
+\label{sec:pop_testy}
+
 Poniżej przedstawiamy kilka wybranych metod testowania GLP. Lista z pewnością jest daleka od kompletności, zwłaszcza, że zagadnienie testowania GLP cieszy się dużą popularnością.
 
 Do testów używany jest ciąg liczb wygenerowanych przez GLP. Poniżej czasem będzie nam wygodnie przyjmować, że jest to ciąg liczb całkowitych nieujemnych
@@ -684,7 +688,7 @@ Testom opartym na własnościach błądzenia przypadkowego poświęcone są kole
 
 \chapter{Metoda testowania}
 \label{czesc:metoda}
-W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do testowania GLP. W tej części pokazujemy jak zastosować ją w praktyce. Opisujemy w jaki sposób sprawdzać czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda oparta o prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy podobną metodę opartą o prawo arcusa sinusa.
+W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do testowania GLP. W tej części pokazujemy jak zastosować ją w praktyce. Opisujemy w jaki sposób sprawdzać czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda wykorzystująca prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy podobną metodę opartą o prawo arcusa sinusa.
 %W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
 
 
@@ -698,7 +702,7 @@ Przykładowo, w części poświęconej prawu arcusa sinusa uzasadniliśmy, że b
 Podobnie ktoś mógłby pomyśleć, że czymś pozytywnym byłyby niewielkie różnice między liczbą jedynek i zer w ciągu bitów otrzymanym z GLP. Moglibyśmy zdecydować się na jakąś ,,rozsądną'' stałą, powiedzmy 100, i uznać, że generator jest dobry jeśli różnica liczby zer i jedynek w ciągu nie przekroczy 100. Wszak duże różnice mogłyby sugerować, że mamy różne prawdopodobieństwa wystąpienia zer i jedynek. Jednak prawo iterowanego logarytmu pokazuje, że to rozumowanie jest błędne. \emph{Należy} spodziewać się fluktuacji i odstępstw od zera, a ich brak oznacza, że GLP nie generuje idealnego ciągu losowych bitów. Tę obserwację wykorzystują testy opartę o charakterystykę $\Slil{n}$.
 
 
-\subsection{Testy oparte o prawo arcusa sinusa}
+\subsection{Test arcusa sinusa}
 Niech
 \begin{equation}
 D_k = \mathbbm{1}\left(S_k > 0 \vee S_{k-1}>0 \right), k=1,2,\ldots,n.
@@ -713,7 +717,7 @@ zaś korzystając z prawa arcusa sinusa
 \begin{equation}
 \begin{split}
  \label{eq:prob_sasin}
-  \Pro{\Sasin{n} \in (a,b)} &\xrightarrow[n \conv \infty]{} \int_a^b \frac{dt}{\sqrt{t(1-t)}}\\
+  \Pro{\Sasin{n} \in (a,b)} &\approx \int_a^b \frac{dt}{\sqrt{t(1-t)}}\\
   &= \frac{2}{\pi}\arcsin(\sqrt{b}) - \frac{2}{\pi}\arcsin(\sqrt{a}).
 \end{split}
 \end{equation}
@@ -731,12 +735,14 @@ W testach opartych o wielkość $\Sasin{n}$ korzystamy z $(s+2)$-elementowej par
 
 Możemy teraz zdefiniować dwie miary określone na partycji  $\mathcal{P}^{asin}_s$. Pierwsza z nich, $ \mu^{asin}_n$, reprezentuje teoretyczny rozkład rozważanej charakterystyki:
 \begin{equation}
+\label{eq:mu_asin}
  \mu^{asin}_n \left( P^{asin}_i \right) = \Pro{\Sasin{n} \in P^{asin}_i},\ \ \ 0 \leq i \leq s+1.
 \end{equation}
 Powyższą wartość możemy wyliczyć ze wzoru (\ref{eq:prob_sasin}).
 
 Druga miara, $\nu^{asin}_n$,  reprezentuje rozkład empiryczny, wyznaczony w testach. Określamy
 \begin{equation}
+ \label{eq:emp_asin}
  \nu^{asin}_n \left( P^{asin}_i \right) = \frac{|\{ j:\ \Sasin{{n,j}} \in  P^{asin}_i, 1 \leq j \leq m\}|}{m},\ \ \ 0 \leq i \leq s+1.
 \end{equation}
 
@@ -763,12 +769,13 @@ oraz $E_i$ oznacza \textit{oczekiwaną} liczbę obserwacji wpadających do tego 
 \end{equation}
 Wartość $E_i$ znamy dokładnie ze wzoru (\ref{eq:prob_sasin}). Przy hipotezie zerowej statystyka
 \begin{equation}
+\label{eq:chi_asin}
  T = \sum_{i=0}^{s+1} \frac{(O_i - E_i)^2}{E_i}
 \end{equation}
 ma w przybliżeniu rozkład chi-kwadrat z $s+1$ stopniami swobody, oznaczany $\chi^2(s+1)$. Duże wartości tej statystyki są dowodem wadliwości GLP.
 
 
-\subsection{Testy oparte o prawo iterowanego logarytmu}
+\subsection{Test iterowanego logarytmu}
 Przyjrzyjmy się teraz metodzie zastosowanej w \cite{wang-nic}. Jest ona podobna do metody opisanej w poprzednim paragrafie. Liczymy jedynie inną charakterystykę ciągów i dostosowujemy partycję prostej. Przypomnijmy oznaczenie
 \begin{equation}
 \Slil{n} = \frac{S_n}{\sqrt{2n \log \log n}}.
@@ -795,21 +802,162 @@ Teoretyczny i empiryczny rozkład określamy w tym przypadku następująco:
  \mu^{lil}_n \left( P^{lil}_i \right) = \Pro{\Slil{n} \in P^{lil}_i},\ \ \ 0 \leq i \leq s+1,
 \end{equation}
 \begin{equation}
+ \label{eq:emp_lil}
  \nu^{lil}_n \left( P^{lil}_i \right) = \frac{|\{ j:\ \Slil{{n,j}} \in  P^{lil}_i, 1 \leq j \leq m\}|}{m},\ \ \ 0 \leq i \leq s+1,
 \end{equation}
 przy czym wartość (\ref{eq:mu_lil}) znamy dzięki (\ref{eq:prob_slil}), zaś $\Slil{{n,j}}$ oznacza oczywiście replikacje $\Slil{n}$, obliczone dla kolejnych ciągów.
 
-\section{Analiza błędów}
+\section{Analiza błędu}
+Omawiając test arcusa sinusa oraz test iterowanego logarytmu dokonywaliśmy w obliczeniach pewnych przybliżeń. Wystarcza to do przekazania idei opisanych metod testowania, jednak dla porządku należy uzasadnić, że błąd aproksymacji nie ma istotnego wpływu. W \cite{wang-nic} pokazano, że dla $n \geq 26$ błąd przybliżenia w (\ref{eq:prob_slil}) jest pomijalny. Tutaj oszacujemy błąd popełniany w (\ref{eq:prob_sasin}).
+
+W przypadku testu arcusa sinusa korzystaliśmy z aproksymacji dwukrotnie: najpierw przybliżając $p_{2k,2n}$ używając wzoru Stirlinga, a później przybliżając sumę całką. Dla analizy pierwszego z tych przybliżeń przyda nam się następujący fakt, pochodzący z \cite{leja}.
+\begin{lemat}
+ Dla każdej liczby naturalnej $n$ istnieje liczba $\theta_n$, $0 < \theta_n \leq 1$, taka że
+ \[ n! = \sqrt{2\pi n} \left( \frac{n}{e} \right)^n \exp\left\{\frac{\theta_n}{12n}\right\} \].
+\end{lemat}
+Uzupełniając obliczenia, które wykonaliśmy, aby otrzymać (\ref{eq:disc_asine_approx}) o czynnik $\exp\left\{\frac{\theta_n}{12n}\right\}$ otrzymujemy
+\begin{equation}
+ \label{eq:blablabla}
+ p_{2k,2n} = \frac{1}{\pi \sqrt{k(n-k)}} \exp\left\{ \frac{\theta_{2k} - 4\theta_k}{24k} + \frac{\theta_{2(n-k)} - 4\theta_{n-k}}{24(n-k)} \right\}
+\end{equation}
+Oznaczmy
+\[ d_{k,n} = \frac{1}{\pi \sqrt{k(n-k)}} \]
+Naszym celem jest pokazanie, że $|p_{2k,2n} - d_{k,n}|$ jest małe. Z (\ref{eq:blablabla}) dostajemy
+\[ \frac{p_{2k,2n}}{d_{k,n}} \leq \exp\left\{ \frac{1}{24k} + \frac{1}{24(n-k)} \right\} = \exp\left\{ \frac{n}{24k(n-k)} \right\} \]
+oraz
+\[ \frac{p_{2k,2n}}{d_{k,n}} \geq \exp\left\{ \frac{-4}{24k} + \frac{-4}{24(n-k)} \right\} = \exp\left\{ -\frac{n}{6k(n-k)} \right\}. \]
+Korzystając z powyższych i z nierówności $e^x - 1 \leq 2x$ (dla $x > 0$ i dostatecznie małych) oraz $1 - e^{-x} \leq x$ uzyskujemy
+\[ p_{2k,2n} - d_{k,n} \leq d_{k,n} \left(\exp\left\{ \frac{n}{24k(n-k)} \right\} - 1\right) \leq d_{k,n}\frac{n}{12k(n-k)} \]
+oraz 
+\[ d_{k,n} - p_{2k,2n} \leq d_{k,n} \left( 1 -\exp\left\{ -\frac{n}{6k(n-k)} \right\} \right) \leq d_{k,n}\frac{n}{6k(n-k)} \]
+co razem daje 
+\[ |p_{2k,2n} - d_{k,n}| \leq  d_{k,n}\frac{n}{6k(n-k)} = \frac{n}{6\pi\left( k(n-k) \right)^{\frac{3}{2}}}. \]
+Ustalmy $\delta > 0$ i założymy dodatkowo, że $\delta < \frac{k}{n} < 1 - \delta$. Funkcja $k \mapsto \left( k(n-k) \right)^{3/2}$ przyjmuje minimalną wartość na brzegu przedziału, w którym się ją rozpatruje, dlatego
+\[ |p_{2k,2n} - d_{k,n}| \leq \frac{n}{6\pi\left( \delta n (n- \delta n) \right)^{\frac{3}{2}}} = \frac{1}{6\pi n^2 \left( \delta(1- \delta) \right)^{\frac{3}{2}}}.  \]
+Wielkość błędu aproksymacji w (\ref{eq:prob_sasin}) oszacujemy w dwóch etapach. Na początek weźmy takie liczby $a,b$, że $\delta < a < b < 1 - \delta$.
+Wtedy
+\begin{equation*}
+ \begin{split}
+  \left| \sum_{a < \frac{k}{n} < b} p_{2k,2n} -  \sum_{a < \frac{k}{n} < b}  d_{k,n} \right| &\leq \sum_{a < \frac{k}{n} < b} \left|  p_{2k,2n} -  d_{k,n} \right| = \sum_{a < \frac{k}{n} < b} \frac{1}{6\pi n^2 \left( \delta(1- \delta) \right)^{\frac{3}{2}}} \\
+  &= \frac{\ceil{bn - an}}{6\pi n^2 \left( \delta(1- \delta) \right)^{\frac{3}{2}}} \leq \frac{b - a}{3\pi n \left( \delta(1- \delta) \right)^{\frac{3}{2}}} \\
+  &\leq \frac{1}{3\pi n \left( \delta(1- \delta) \right)^{\frac{3}{2}}} = (\blacklozenge)
+ \end{split}
+\end{equation*}
+Drugim źródłem niedokładności jest zastąpienie sumy przez całkę. Rozpatrzmy dowolną funkcję $f$, różniczkowalną w przedziale $(a,b)$. Podzielmy $(a,b)$ na odcinki długości $\frac{1}{n}$ i niech $x_k$ będzie dowolnym punktem w odcinku zawierającym $\frac{k}{n}$, a $M_k$ i $m_k$ odpowiednio maksymalną i minimalną wartością funkcji w tym odcinku. Korzystając z twierdzenia Lagrange'a dostajemy
+% \begin{equation}
+%  \begin{split}
+%     \left| \int_a^b f(x) dx - \sum\limits_{i=1}^{n}\frac{b-a}{n}f(x_i) \right| &\leq \sum\limits_{i=1}^{n}\frac{b-a}{n}(M_i - m_i) = \sum\limits_{i=1}^{n}\frac{(b-a)^2}{n^2}|f'(\xi_i)| \\
+%     &\leq \sum\limits_{i=1}^{n}\frac{(b-a)^2}{n^2} \sup_{a < x < b} |f'(x)| = \frac{(b-a)^2}{n} \sup_{a < x < b} |f'(x)|.
+%  \end{split}
+% \end{equation}
+\begin{equation}
+ \begin{split}
+    \left| \int_a^b f(x) dx - \sum\limits_{a < \frac{k}{n} < b}\frac{1}{n}f(x_k) \right| &\leq \sum\limits_{a < \frac{k}{n} < b}\frac{1}{n}(M_i - m_i) = \sum\limits_{a < \frac{k}{n} < b}\frac{1}{n^2}|f'(\xi_i)| \\
+    &\leq \sum\limits_{a < \frac{k}{n} < b}\frac{1}{n^2} \sup_{a < x < b} |f'(x)| = \frac{\ceil{bn-an}}{n^2} \sup_{a < x < b} |f'(x)| \\
+    &\leq \frac{2(b-a)}{n} \sup_{a < x < b} |f'(x)|.
+ \end{split}
+\end{equation}
+W szczególności dla
+\[ f(x) = \frac{1}{\pi \sqrt{x(1-x)}} \] mamy
+\[ f'(x) = \frac{2x-1}{2 \pi (x(1-x))^{\frac{3}{2}}}, \]
+\[ \frac{1}{n}f\left(\frac{k}{n} \right) = \frac{1}{n\pi \sqrt{ \frac{k}{n}(1-\frac{k}{n})}} = \frac{1}{\pi \sqrt{k(n-k)}} = d_{k,n}  \]
+a stąd w interesującym nas przedziale
+\[  \left| \int_a^b f(x) dx - \sum\limits_{a < \frac{k}{n} < b}d_{k,n} \right| \leq \frac{2}{n} \sup_{\delta < x < 1-\delta} |f'(x)| = \frac{1 - 2\delta}{\pi n (\delta(1-\delta))^{\frac{3}{2}}} = (\bigstar) \]
+
+W testach wykorzystamy partycję prostej $\mathcal{P}^{asin}_{40}$, dlatego u nas $\delta = \frac{1}{80} > 0.01$. Będzie ponadto $n \geq 2^{26}$. Dlatego
+\begin{equation*}
+ \begin{split}
+  (\blacklozenge) &\leq \frac{107.72}{n} \leq 1.6 \cdot 10^{-6} \\
+  (\bigstar) &\leq \frac{316.69}{n} \leq 4.7 \cdot 10^{-6}
+ \end{split}
+\end{equation*}
+Ostatecznie
+\begin{equation*}
+\begin{split}
+\left| \int_a^b f(x) dx - \sum\limits_{a < \frac{k}{n} < b} p_{2k,2n} \right|
+  &\leq \left| \int_a^b f(x) dx - \sum\limits_{a < \frac{k}{n} < b} d_{k,n} \right| +  \left| \sum\limits_{a < \frac{k}{n} < b} d_{k,n} - \sum\limits_{a < \frac{k}{n} < b} p_{2k,2n} \right| \\
+  &= (\blacklozenge) + (\bigstar) \leq 6.3 \cdot 10^{-6}
+\end{split} 
+\end{equation*}
+co uzasadnia wzór (\ref{eq:prob_sasin}) w przypadku $\delta < a < b < 1 - \delta$. 
+
+Musimy jeszcze zbadać niedokładność ,,na brzegu''. Mamy
+\begin{equation*}
+\begin{split}
+  \left| \int_0^\delta f(x) dx - \sum\limits_{0 < \frac{k}{n} < \delta} p_{2k,2n} \right| &= \left| \int_0^{\frac{1}{2}} f(x) dx -  \int_\delta^{\frac{1}{2}} f(x) dx - \sum\limits_{0 < \frac{k}{n} < \frac{1}{2}} p_{2k,2n} + \sum\limits_{\delta < \frac{k}{n} < \frac{1}{2}} p_{2k,2n} \right| \\
+  &= \left| \frac{1}{2} -  \int_\delta^{\frac{1}{2}} f(x) dx - \frac{1}{2} + \sum\limits_{\delta < \frac{k}{n} < \frac{1}{2}} p_{2k,2n} \right| \\
+  &= \left|\int_\delta^{\frac{1}{2}} f(x) dx - \sum\limits_{\delta < \frac{k}{n} < \frac{1}{2}} p_{2k,2n} \right| \leq 6.3 \cdot 10^{-6},
+\end{split}
+\end{equation*}
+gdzie ostatnie przejście wynika z wcześniej przeprowadzonych rachunków. Powyższe rachunki pokazują, że błąd przybliżenia jest pomijalny.
 
 
 \chapter{Testy}
 \label{czesc:testy}
 
-\section{Uwagi praktyczne}
+Przebrnąwszy przez długie teorie i rozważania, przechodzimy do najciekawszej części pracy, czyli do implementacji opisanej metody testowania i sprawdzenia jej na powszechnie wykorzystywanych generatorach.
 
-Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów długości $n = 2^{34}$ bitów. Używaliśmy partycji $\mathcal{P}^{lil}_{40}$ dla testów korzystających z charakterystyki $\Slil{n}$ i partycji $\mathcal{P}^{asin}_{40}$ dla testów korzystających z charakterystyki $\Sasin{n}$.
+\section{Implementacja}
+Testy oparte o prawa arcusa sinusa i iterowanego logarytmu przedstawione w części \ref{czesc:metoda} zaimplementowałem w języku Julia. Napisany program stanowi równie ważną część tej pracy.
+
+Julia jest to nowoczesny (prace nad nim rozpoczęto w roku 2009) i szybki język programowania przeznaczony do obliczeń naukowych. Jest to więc narzędzie bardzo dobrze nadające się do naszych eksperymentów.
+
+Powstały skrypt można wykorzystać do przetestowania dowolnego generatora. Trzeba zadbać jedynie o to, aby wyjście z GLP było przekazywane do programu testującego w odpowiednim formacie. Poniżej opisujemy dokładniej jak to zrobić. Jednak najpierw omówmy kilka prozaicznych kwestii, które wpłynęły na końcową architekturę programu.
+
+\subsection{Uwagi praktyczne}
+Najwygodniejszym sposobem testowania GLP byłoby prawdopodobnie podzielenia zadania na dwa etapy. W pierwszej kolejności użylibyśmy GLP do wygenerowania $m$ sekwencji bitów długości $n$, które zapisalibyśmy do pliku. Następnie program testujący wczytałby ten plik i wyliczył odpowiednie statystki, rozstrzygnął czy dane są losowe, itd. Niestety nie da się zaprojektować systemu w taki sposób, aby opisany tryb pracy był możliwy.
+
+Powodem jest olbrzymia ilość używanych danych. W celu przetestowania większości GLP wykorzystujemy je do wygenerowania $m = 10000$ ciągów bitów długości $n = 2^{34}$. Rodzi to niebagatelne problemy implementacyjne. Pojedynczy ciąg ma rozmiar $2GB$, więc w pamięci przeciętnego komputera nie zmieści się ich nawet kilka. Wymusza to przetwarzanie ciągów jednego po drugim -- po obliczeniu statystyk dla jednego ciągu należy natychmiast zwolnić pamięć dla kolejnego. Większym problemem jest jednak fakt, że dane zajmują łącznie $20TB$, więc zapisanie ich do pliku jest możliwe na mało której maszynie -- co uzasadnia dlaczego pomysł przedstawiony w poprzednim akapicie jest niewykonalny.
+
+Jedyną możliwością jest postępowanie w taki sposób, by GLP i skrypt funkcjonowały naprzemiennie. GLP generuje sekwencję bitów, program testujący ją analizuje, po czym pamięć zostaje zwolniona i możemy powtórzyć procedurę. Na szczęście istnieje prosty środek pozwalający zorganizować obliczenia w ten sposób. Mowa tu o unixowym mechanizmie potoku. Wystarczy wyniki z GLP przekazywać na standardowe wyjście, które będzie połączone ze standardowym wejściem programu testującego. System operacyjny sam zadba o to, żeby oba procesy działały na zmianę.
+
+Kolejną istotną kwestią jest tryb zapisu danych do strumienia wejścia-wyjścia. Zwróćmy uwagę, że gdybyśmy przekazywali dane w trybie tekstowym, to przekazywany łańcuch znaków zajmowałby 8 razy więcej miejsca niż jest to potrzebne -- każdy bit byłby reprezentowany jako jednobajtowy znak \texttt{'0'} lub \texttt{'1'}. Byłoby to fatalne podejście, gdyż, po pierwsze, prawdopodobnie nie starczyłoby pamięci do zapisania całego ciągu. Po drugie, nawet gdyby pamięci było wystarczająco, to zapisywanie i wczytywanie tych danych do i ze strumienia kilkukrotnie wydłużyłoby (i tak bardzo długi) czas pracy programu. Dlatego dane przekazujemy w trybie binarnym.
+
+Ostatnią rzeczą, na którą warto zwrócić uwagę, jest opłacalność oddzielenia obliczania charakterystyk ciągów ($\Sasin{n}$ lub $\Slil{n}$) od ich porównywania z teoretycznym rozkładem. Lepiej jest zapisywać wartości charakterystyk do pliku, a następnie oddzielnym skryptem badać zgodność z oczekiwanym rozkładem. Dzięki takiemu podejściu można uruchomić instancje generatora na wielu maszynach (zadbawszy o to by korzystały one z innych ziaren). Po zakończeniu obliczeń łatwo jest scalić wyniki i wyznaczyć sumaryczne statystyki.
+
+\subsection{Użycie programu}
+\paragraph{Uruchomienie.}
+Załóżmy, że dysponujemy programem \texttt{gen.bin} generującym sekwencje pseudolosowych bitów. Powiedzmy, że przyjmuje on z linii poleceń dwa argumenty oznaczające liczbę i logarytm długości generowanych ciągów. Opiszmy jak przetestować ten generator.
+
+Z perspektywy użytkownika najważniejsze jest, że punkt startowy programu testującego jest w pliku \texttt{Tester.jl}. Program wczytuje ze standardowego wejścia strumień bitów. Do pliku podanego w linii poleceń zapisuje wyniki swoich obliczeń, tj. wartości $\Sasin{n}$ lub $\Slil{n}$. Po zakończeniu działania używamy skryptu \texttt{ResultReader.jl} do wyznaczenia rozkładów empirycznych ze wzorów (\ref{eq:emp_asin}) i (\ref{eq:emp_lil}). Skrypt następnie wyliczy odległości $d^{tv}$ i $d^{sep}$ oraz $p$-wartości testu zgodności~$\chi^2$.
+
+Skrypt \texttt{Tester.jl} przyjmuje z linii poleceń następujące argumenty:
+\begin{itemize}
+ \item \texttt{testType} -- słowo \texttt{asin} lub \texttt{lil} oznaczające którą z charakterystyk $\Sasin{n}$ i $\Slil{n}$ obliczamy,
+ \item \texttt{nrOfCheckPoints} -- Dla ciągów długości $n$ do pliku wynikowego zapisujemy nie tylko $S^{\bullet}_{n}$, ale również $S^{\bullet}_{n/2}$, $S^{\bullet}_{n/4}$, itd.  \texttt{nrOfCheckPoints} to liczba tych wartości.
+ \item \texttt{pathToFile} -- nazwa pliku do którego zapisujemy wyniki.
+\end{itemize}
+Podobne argumenty ma skrypt \texttt{ResultReader.jl}:
+\begin{itemize}
+ \item \texttt{testType} -- słowo \texttt{asin} lub \texttt{lil} mówiące, z którą teoretyczną miarą należy porównywać wyniki,
+ \item \texttt{logLength} -- liczba naturalna oznaczająca logarytm długości ciągów wykorzystanych do otrzymania podanych wyników,
+ \item \texttt{pathToFile} -- nazwa pliku z którego odczytujemy wyniki.
+\end{itemize}
+Wróćmy do generatora \texttt{gen.bin}. Możemy go przetestować wywołując z konsoli przykładowo \newline
+\texttt{\hspace*{20pt}\$ ./gen.bin 1000 25 | julia Main.jl asin 5 wyniki.csv}\newline
+\noindent W ten sposób testujemy generator \texttt{gen.bin} na podstawie 1000 ciągów zawierających $2^{25}$ bitów przy użyciu charakterystyki $\Sasin{n}$. Wyniki znajdą się w pliku \texttt{wyniki.csv}. Po zakończeniu obliczeń możemy je zinterpretować poleceniem \newline
+  \texttt{\hspace*{20pt}\$ julia ResultReader.jl asin 25 wyniki.csv} \newline
+Podobnie można przetestować dowolny inny generator, pamiętając, że jego wyjście musi być zapisane zgodnie z formatem opisanym poniżej.
+
+\paragraph{Testowanie własnych GLP.}
+Z punktu widzenia osoby, która chce wykorzystać program do sprawdzenia swojego GLP ważne jest co dokładnie ma się znaleźć w strumieniu wejściowym programu testującego. Format jest prosty:
+\begin{itemize}
+ \item Pierwsze 8 bajtów strumienia zawiera 64-bitową wartość typu \texttt{integer} oznaczającą liczbę ciągów bitów.
+ \item Kolejne 8 bajtów zawiera 64-bitową wartość typu \texttt{integer} oznaczającą długość pojedynczego ciągu.
+ \item Dalej następuje $m \cdot n$ bitów danych, przy czym każde kolejne $n$ bitów traktowane jest jako jeden ciąg używany w testach.
+\end{itemize}
+\emph{Uwaga.} Nie ma żadnych ,,specjalnych'' bitów oznaczających przerwy między ciągami, ani niczego podobnego. Po wczytaniu $n$ bitów jednego ciągu, kolejny bit jest uważany za pierwszy bit następnego ciągu.
+
 
 \section{Wyniki}
+Przyjrzyjmy się wynikom testowania kilku znanych GLP. Każdy z nich testowany był przy użyciu $m = 10000$ ciągów. Długością używanej sekwencji było w większości przypadków $n=2^{34}$.  
+
+Wartości $\Sasin{\bullet}$ lub $\Slil{\bullet}$ obliczone zostały nie tylko dla całych ciągów, ale także dla podciągów długości $n/2$, $n/4$, itd. Pozwala to obserwować zgodność z pożądaną miarą na różnych etapach. Do badania zgodności użyto partycji $\mathcal{P}^{lil}_{40}$ dla testów korzystających z charakterystyki $\Slil{n}$ i partycji $\mathcal{P}^{asin}_{40}$ dla testów korzystających z charakterystyki $\Sasin{n}$. Dla kolejnych podciągów zostały wyznaczone miary empiryczne 
+
+Do testów wykorzystano własne implementacje rozpatrywanych GLP (za wyjątkiem MT19937). Program wywołujący GLP korzystał losowych ziaren pobranych ze strony www.random.org. Przed wygenerowaniem każdej kolejnej sekwencji bitów ustawiano nowe ziarno generatora. 
+
+Podkreślmy, że otrzymanie poniższych wyników nie było błahostką. Przetestowanie jednego GLP na 10 komputerach w pracowni Instytutu Informatyki zajmowało około półtorej doby.
+
 % \begin{table}[ht!]
 % \centering
 %  \caption{Wyniki dla $\Sasin{n}$.}
@@ -832,180 +980,303 @@ Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów
 % \end{tabular}  
 % \end{table}
 
-\subsection{Bilioteczny rand w Borland C}
+\subsection{RANDU}
+Na rozgrzewkę rozpoczynamy od generatora, który od dawna nie jest w użyciu. RANDU powstał na początku lat 60. Wspominaliśmy już o nim w paragrafie \ref{sec:pop_testy}, dając go jako przykład generatora fatalnie oblewającego test spektralny.
+
+RANDU jest to po prostu $MCG(2^{31}, 65539)$. Wybór liczby $65539$ wydawał się dobry, gdyż $65539 = 2^{16} + 3$, co umożliwiało szybkie, sprzętowe wykonanie mnożenia.
+
+Rezultaty testowania RANDU przedstawione są w Tabelach \ref{tab:randu_asin} i \ref{tab:randu_lil}. Pierwszy wiersz w tabelach oznacza długości podciągów. Dla podciągu długości $n_k$ została obliczona teoretyczna miara $\mu_{n_k}$ według wzoru (\ref{eq:mu_asin}) lub (\ref{eq:mu_lil}) oraz empiryczna miara $\nu_k$ według wzoru (\ref{eq:emp_asin}) lub (\ref{eq:emp_lil}). Każda kolumna zawiera wartości $d^{tv}(\mu_{n_k}, \nu_{n_k})$, $d^{sep}(\mu_{n_k}, \nu_{n_k})$, $d^{sep}(\nu_{n_k}, \mu_{n_k})$ oraz $p$-wartość statystyki (\ref{eq:chi_asin}). Dla wszystkich GLP tabele z wynikami zrobione są w ten sam sposób.
 
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Sasin{n}$.}
+ \caption{Wyniki testowania generatora RANDU charakterystyką $\Sasin{n}$.}
+ \label{tab:randu_asin}
+\begin{tabular} {||c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{21}$ &  $2^{22}$ &  $2^{23}$ &  $2^{24}$ &  $2^{25}$ &  $2^{26}$\\ \hline
+     tv &  0.4604 &  0.4616 &  0.4637 &   0.467 &  0.4695 &  0.4697\\ \hline
+   sep1 &  0.6017 &  0.6646 &  0.6229 &  0.6138 &  0.5934 &  0.6453\\ \hline
+   sep2 &  0.8659 &  0.8662 &  0.8667 &  0.8675 &  0.8681 &  0.8682\\ \hline
+  p-val &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
+\end{tabular}  
+\end{table}
+
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania generatora RANDU charakterystyką $\Slil{n}$.}
+ \label{tab:randu_lil}
+\begin{tabular} {||c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{21}$ &  $2^{22}$ &  $2^{23}$ &  $2^{24}$ &  $2^{25}$ &  $2^{26}$\\ \hline
+     tv &  0.4955 &   0.496 &  0.4965 &  0.4969 &  0.4973 &  0.4977\\ \hline
+   sep1 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+   sep2 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+  p-val &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
+\end{tabular}  
+\end{table}
+
+Jak widać nie trzeba bardzo długich ciągów, aby przekonać się, że wyjścia RANDU nie można uznać za losowe. Nie bez przyczyny został on szybko wyparty przez lepsze generatory.
+
+\FloatBarrier
+\subsection{Biblioteczny rand w Microsoft Visual C++}
+Funkcja \texttt{rand} w Microsoft Visual C++ opiera się o $LCG(2^{32}, 214013, 2531011)$. Od zwykłego LCG różni się jednak tym, że zwracane są jedynie bity na pozycjach 30..16. 
+
+Jest to jeden z generatorów testowanych w \cite{wang-nic}. Podobnie jak autorzy tej pracy odrzucamy najmniej istotne 7 bitów liczb zwracanych przez funkcję \texttt{rand} (czyli używamy tylko bitów 30..23 liczby otrzymanej z LCG). Wyniki testów zestawiono w Tabelach \ref{tab:svis_asin} i \ref{tab:svis_lil}.
+
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania standardowego generatora w Visual C++ charakterystyką $\Sasin{n}$.}
+ \label{tab:svis_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+     tv &  0.0289 &  0.0387 &  0.0615 &  0.0768 &  0.0848 &  0.0928 &  0.0965 &   0.187 &  0.2093\\ \hline
+   sep1 &   0.203 &  0.1548 &  0.1952 &  0.2605 &  0.3664 &   0.421 &  0.5528 &  0.6533 &  0.8163\\ \hline
+   sep2 &   0.178 &   0.226 &  0.2524 &  0.2364 &  0.2841 &   0.316 &  0.4336 &  0.6112 &  0.4328\\ \hline
+  p-val &  0.0128 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline 
+\end{tabular}  
+\end{table}
+
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania standardowego generatora w Visual C++ charakterystyką $\Slil{n}$.}
+ \label{tab:svis_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+     tv &   0.035 &  0.0512 &  0.0938 &  0.1234 &  0.1672 &  0.2423 &    0.31 &  0.4991 &    0.95\\ \hline
+   sep1 &  0.2831 &  0.7419 &  0.9731 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+   sep2 &   0.267 &  0.1416 &  0.2635 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+  p-val &  0.0001 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
+\end{tabular}  
+\end{table}
+
+Pamiętajmy, że okresem tego LCG jest $2^{31}$, a z jednego wywołania otrzymujemy $8 = 2^3$ bitów. Oznacza to, że aby dostać ciąg bitów długości $2^{34}$ przechodzimy przez pełen cykl generatora. Musieliśmy więc każdy układ 8 bitów wygenerować tyle samo razy, skąd wniosek, że po $2^{34}$ krokach błądzenie losowe zawsze wracało do zera. Widać to w wynikach testowania charakterystyką $\Slil{n}$. Wszystkie obserwacje wpadają do przedziału $[0, 0.05)$. Jego teoretyczna miara wynosi $\sim 0.05$, a stąd $d^{tv}(\mu^{lil}_n, \nu^{lil}_n) \approx 0.95$.
+
+Ktoś złośliwy mógłby powiedzieć, że w bardzo złożony sposób udowodniliśmy oczywisty fakt, że generatory o krótkich okresach nie nadają się do generowania dużych ilości liczb pseudolosowych. Zauważmy jednak, że analizowany generator ma problemy już przy $n=2^{26}$, a do wygenerowania błądzenia tej długości potrzeba tylko $2^{23} / 2^{31} = 1/2^8 \approx 0.4\%$ całego okresu. Trudno jest więc ocenić ten generator dobrze, nawet w kategorii generatorów o krótkich okresach.
+
+\textbf{Co zaskakujące, NIST Test Suite uznaje ten generator za poprawny}, jak zauważyli autorzy \cite{wang-nic}.
+
+\FloatBarrier
+\subsection{Biblioteczny rand w Borland C/C++}
+Funkcja \texttt{rand} w środowisku Borland jest implementacją $LCG(2^{32}, 22695477, 1)$, która, podobnie jak \texttt{rand} w Visual C++, zwraca jedynie bity 30..16.
+
+Postępując tak jak w poprzednim przykładzie bierzemy do testów tylko 8 najistotniejszych bitów zwróconej liczby.
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania standardowego generatora w Borland C/C++ charakterystyką $\Sasin{n}$.}
  \label{tab:borland_asin}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.038 &   0.05 &   0.07 &  0.086 &  0.139 &  0.156 &  0.123 &  0.147 &  0.215\\ \hline
-  sep1 &  0.129 &  0.184 &  0.251 &  0.373 &  0.549 &  0.515 &   0.57 &  0.687 &  0.822\\ \hline
-  sep2 &  0.202 &  0.212 &   0.21 &  0.314 &   0.37 &  0.373 &   0.38 &  0.517 &  0.401\\ \hline
- p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
-
-
- 
+     tv &  0.0384 &  0.0502 &  0.0697 &  0.0861 &  0.1394 &  0.1562 &  0.1231 &  0.1466 &  0.2148\\ \hline
+   sep1 &  0.1293 &   0.184 &  0.2513 &  0.3733 &  0.5485 &  0.5149 &  0.5696 &  0.6873 &  0.8219\\ \hline
+   sep2 &  0.2024 &   0.212 &  0.2096 &  0.3137 &  0.3702 &   0.373 &  0.3799 &  0.5167 &  0.4009\\ \hline
+  p-val &  0.0001 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
 \end{tabular}  
 \end{table}
+
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Slil{n}$.}
+ \caption{Wyniki testowania standardowego generatora w Borland C/C++ charakterystyką $\Slil{n}$.}
  \label{tab:borland_lil}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline 
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.049 &  0.084 &  0.124 &  0.182 &   0.31 &  0.407 &  0.465 &   0.59 &  0.941\\ \hline
-  sep1 &  0.599 &  0.708 &    0.9 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
-  sep2 &  0.179 &  0.233 &  0.276 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
- p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
-
- 
+     tv &  0.0684 &  0.1002 &  0.1395 &   0.194 &  0.3187 &  0.4136 &  0.4685 &  0.5911 &    0.95\\ \hline
+   sep1 &  0.6752 &  0.7357 &  0.9193 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+   sep2 &   0.161 &  0.2565 &  0.2978 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+  p-val &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
 \end{tabular}  
 \end{table}
+Wyniki przedstawione są w Tabelach \ref{tab:borland_asin} i \ref{tab:borland_lil}. Są one bardzo podobne do wyników generatora z Visual C++ i tyczą się ich te same uwagi.
 
 \FloatBarrier
-\subsection{Biblioteczny rand w moim kompilatorze}
+\subsection{Biblioteczny rand w BSD libc}
+Funkcja \texttt{rand} z biblioteki systemu BSD używała kiedyś implementacji $LCG(2^{31}, 1103515245, 12345)$ i w przeciwieństwie do dwóch poprzednich generatorów zwraca wszystkie bity generowanych liczb -- i do tego testu użyliśmy ich wszystkich. Tabele \ref{tab:bsd_asin} i \ref{tab:bsd_lil} obrazują dlaczego generator zmieniono.
 
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Sasin{n}$.}
+ \caption{Wyniki testowania starego generatora z BSD libc charakterystyką $\Sasin{n}$.}
+ \label{tab:bsd_asin}
+\begin{tabular} {||c|c|c|c|c|c|c||}  
+ \hline 
+      n &  $2^{21}$ &  $2^{22}$ &  $2^{23}$ &  $2^{24}$ &  $2^{25}$ &  $2^{26}$\\ \hline
+     tv &  0.0883 &   0.098 &  0.0862 &  0.0951 &  0.0936 &  0.1081\\ \hline
+   sep1 &  0.3402 &  0.3979 &  0.4111 &   0.498 &  0.4346 &  0.4751\\ \hline
+   sep2 &  0.3634 &  0.4198 &  0.3053 &  0.2805 &  0.3424 &   0.407\\ \hline
+  p-val &  0.1829 &  0.0326 &  0.1874 &  0.1767 &  0.1181 &  0.0051\\ \hline
+
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania starego generatora z BSD libc charakterystyką $\Slil{n}$.}
+ \label{tab:bsd_lil}
+\begin{tabular} {||c|c|c|c|c|c|c||}  
+ \hline 
+      n &  $2^{21}$ &  $2^{22}$ &  $2^{23}$ &  $2^{24}$ &  $2^{25}$ &  $2^{26}$\\ \hline
+     tv &  0.1956 &  0.2191 &  0.2472 &  0.2539 &  0.2464 &  0.2707\\ \hline
+   sep1 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+   sep2 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+  p-val &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
+\end{tabular}  
+\end{table}
+
+Nie potrzeba bardzo długich ciągów, by zobaczyć, że wyjście funkcji \texttt{rand} z BSD nie jest losowe. Przyczyną tak złych wyników jest fakt, że to LCG wykonuje obliczenia modulo $2^{31}$. Jak zauważyliśmy przytaczając Fakt \ref{fakt:lcg_okres}, w takiej sytuacji okres $d$ najmniej znaczących bitów wynosi $2^d$. W efekcie liczba zer i jedynek jest zbyt wyrównana co łatwo wyłapują testy oparte o własności błądzenia przypadkowego. Trzeba jednak przyznać, że charakterystyka $\Slil{n}$ pokazuje do zdecydowanie wyraźniej.
+
+\FloatBarrier
+\subsection{Biblioteczny rand w GLIBC}
+Funkcja \texttt{rand} z GNU C Library korzysta z bardziej skomplikowanego generatora od testowanych do tej pory. Jego stan opisany jest przez 34 liczby  $x_i, x_{i+1},\ldots, x_{i+33}$. Generator inicjowany jest ziarnem $s$, $0 \leq s \leq 2^{31}$, zaś początkowym stanem jest
+\begin{align*}
+  x_0 &= s & \\
+  x_i &= 16807 x_{i-1} \mod (2^{31}-1),\ \ &\mbox{gdy } 0 < i < 31\\
+  x_i &= x_{31-i}, &\mbox{gdy } i \in \{31,32,33\}.
+\end{align*}
+Kolejne wartości $x_i$ wyznaczane są ze wzoru
+\[ x_i = (x_{i-3} + x_{i-31}) \mod2^{32}. \]
+Przy $k$-tym wywołaniu generator zwraca $x_{k+343} \gg 1$.
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania standardowego generatora w GCC charakterystyką $\Sasin{n}$.}
  \label{tab:mojkomp_asin}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.029 &  0.022 &  0.026 &  0.023 &   0.02 &  0.029 &  0.024 &  0.025 &  0.023\\ \hline
-  sep1 &  0.116 &  0.125 &  0.163 &  0.119 &  0.166 &  0.172 &  0.131 &  0.132 &   0.14\\ \hline
-  sep2 &  0.175 &  0.191 &  0.144 &  0.187 &  0.111 &  0.134 &  0.179 &  0.126 &  0.188\\ \hline
- p-val &  0.065 &  0.551 &  0.257 &  0.489 &  0.797 &  0.111 &  0.588 &   0.26 &  0.393\\ \hline
-
-
- 
+     tv &  0.0287 &  0.0217 &  0.0264 &  0.0228 &  0.0202 &  0.0289 &  0.0237 &  0.0254 &   0.023\\ \hline
+   sep1 &  0.1157 &  0.1249 &  0.1629 &  0.1186 &  0.1661 &  0.1717 &  0.1306 &  0.1316 &  0.1405\\ \hline
+   sep2 &  0.1754 &  0.1909 &  0.1436 &  0.1869 &   0.111 &  0.1344 &  0.1786 &  0.1262 &  0.1879\\ \hline
+  p-val &  0.0649 &  0.5511 &  0.2565 &  0.4887 &  0.7967 &  0.1115 &   0.588 &  0.2599 &   0.393\\ \hline 
 \end{tabular}  
 \end{table}
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Slil{n}$.}
+ \caption{Wyniki testowania standardowego generatora w GCC charakterystyką $\Slil{n}$.}
  \label{tab:mojkomp_lil}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline 
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.021 &  0.029 &  0.029 &   0.03 &  0.023 &  0.023 &  0.034 &  0.024 &  0.022\\ \hline
-  sep1 &  0.109 &   0.11 &  0.103 &  0.158 &  0.152 &  0.145 &  0.258 &  0.399 &  0.256\\ \hline
-  sep2 &  0.322 &  0.343 &  0.326 &  0.322 &  0.252 &  0.284 &  0.376 &   0.22 &   0.14\\ \hline
- p-val &  0.576 &  0.012 &  0.005 &  0.003 &  0.274 &  0.237 &    0.0 &  0.469 &   0.79\\ \hline
-
- 
+     tv &  0.0185 &  0.0243 &  0.0242 &  0.0244 &   0.021 &   0.022 &   0.033 &  0.0237 &  0.0221\\ \hline
+   sep1 &  0.2593 &   0.164 &  0.1844 &  0.2573 &   0.201 &  0.1853 &  0.2882 &  0.4129 &  0.2563\\ \hline
+   sep2 &  0.0807 &  0.2133 &  0.2299 &   0.206 &  0.1839 &  0.2361 &  0.3456 &  0.2078 &  0.1405\\ \hline
+  p-val &  0.9627 &  0.4878 &  0.5225 &  0.3022 &  0.6978 &  0.5382 &  0.0009 &  0.4903 &  0.7901\\ \hline
 \end{tabular}  
 \end{table}
 
-\FloatBarrier
-\subsection{BSD rand}
+Do testów brane były wszystkie 31 bitów zwracanych przez GLP. Na podstawie wyników zebranych w Tabelach \ref{tab:mojkomp_asin} i \ref{tab:mojkomp_lil} można stwierdzić, że test arcusa sinusa nie daje podstaw do odrzucania hipotezy o losowości sekwencji generowanych przez analizowany GLP. W przypadku testu iterowanego logarytmu, rezultaty dla $n=2^{34}$ i $n=2^{33}$ również sugerowałyby, że GLP jest dobry. Jednakże dla $n=2^{32}$ obserwujemy coś dziwnego, mamy bardzo niską $p$-wartość wynoszącą około $1/1000$. Może to być kwestia przypadku -- z prawdopodobieństwem $1/1000$ zdarzyłoby się to nawet generatorowi liczb prawdziwie losowych. Popatrzmy jeszcze na $p$-wartości dla dziesięciu 1000-elementowych podzbiorów danych. Wynoszą one: $0.9313$, $0.0949$, $0.8859$, $0.1739$, $0.3675$, $0.0334$, $0.0321$, $0.1824$, $0.0017$, $0.6205$. Zauważmy, że aż 4 $p$-wartości są mniejsze niż $0.1$. W przypadku ciągów prawdziwie losowych zdarzenie, że 4 lub więcej otrzymanych $p$-wartości znajdzie się w tym przedziale wynosi
+\[ 1 - \sum_{i=0}^3 \binom{10}{i} \left(\frac{1}{10}\right)^{i} \left(1 - \frac{1}{10}\right)^{10-i} \approx 0.0016 \]
+To wszystko wskazuje na to, że generator z GLIBC również należy uznać za podejrzany.
 
-\begin{table}[ht!]
-\centering
- \caption{Wyniki dla $\Sasin{n}$.}
- \label{tab:bsd_asin}
-\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
- \hline
-     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213 &  0.213\\ \hline
-  sep1 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826 &  0.826\\ \hline
-  sep2 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436 &  0.436\\ \hline
- p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
-
-
- 
-\end{tabular}  
-\end{table}
-\begin{table}[ht!]
-\centering
- \caption{Wyniki dla $\Slil{n}$.}
- \label{tab:bsd_lil}
-\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
- \hline 
-     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95 &   0.95\\ \hline
-  sep1 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
-  sep2 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
- p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
-
- 
-\end{tabular}  
-\end{table}
 \FloatBarrier
 \subsection{Minstd}
+Minstd jest to $MCG(2^{31}-1, 16807)$. Do generowania ciągów zerojedynkowych użyto bitów 15..8 zwracanych przez GLP. Tabele \ref{tab:minstd_asin} i \ref{tab:minstd_lil}, pokazują że nie jest to dobry GLP. 
 
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Sasin{n}$.}
+ \caption{Wyniki testowania generatora Minstd charakterystyką $\Sasin{n}$.}
  \label{tab:minstd_asin}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.033 &  0.033 &  0.053 &  0.072 &  0.086 &  0.104 &   0.16 &  0.202 &  0.208\\ \hline
-  sep1 &  0.151 &  0.134 &  0.184 &  0.241 &  0.223 &  0.667 &  0.494 &   0.71 &  0.828\\ \hline
-  sep2 &  0.175 &  0.149 &  0.265 &  0.373 &  0.398 &  0.379 &  0.369 &  0.505 &  0.422\\ \hline
- p-val &  0.005 &  0.017 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
-
-
- 
+     tv &  0.0327 &  0.0335 &  0.0528 &  0.0719 &  0.0865 &  0.1044 &  0.1597 &  0.2021 &  0.2083\\ \hline
+   sep1 &  0.1514 &  0.1324 &   0.184 &  0.2413 &  0.2228 &   0.667 &  0.4911 &   0.708 &  0.8247\\ \hline
+   sep2 &  0.1753 &  0.1494 &  0.2649 &  0.3751 &  0.3998 &  0.3787 &  0.3673 &  0.5063 &  0.4246\\ \hline
+  p-val &  0.0056 &  0.0112 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
 \end{tabular}  
 \end{table}
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Slil{n}$.}
+ \caption{Wyniki testowania generatora Minstd charakterystyką $\Slil{n}$.}
  \label{tab:minstd_lil}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline 
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.029 &  0.051 &  0.076 &  0.095 &  0.181 &  0.205 &   0.35 &  0.316 &    0.9\\ \hline
-  sep1 &  0.556 &  0.453 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
-  sep2 &  0.108 &  0.307 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0 &    1.0\\ \hline
- p-val &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0 &    0.0\\ \hline
-
- 
+     tv &  0.0429 &  0.0623 &   0.086 &  0.1055 &  0.1856 &  0.2046 &  0.3543 &  0.3182 &    0.95\\ \hline
+   sep1 &  0.6128 &  0.5142 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+   sep2 &   0.147 &  0.2076 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0 &     1.0\\ \hline
+  p-val &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
 \end{tabular}  
 \end{table}
+
+
+
 \FloatBarrier
 \subsection{CMRG}
+CMRG (od ang. \textit{combined multiple recursive generator}) jest jednym z generatorów mieszanych, omawianych w paragrafie \ref{sec:pop_gen}. Działa on 
+\begin{equation}
+ \begin{split}
+    Z_n &= X_n - Y_n \mod 2^{31}-1 \\
+    X_n &= 63308 X_{n-2} - 183326 X_{n-3} \mod 2^{31}-1 \\
+    Y_n &= 86098 Y_{n-1} - 539608 Y_{n-3} \mod 2^{31} - 2000169
+ \end{split}
+\end{equation}
+Do testów braliśmy bity 15..7 zmiennej $Z_n$. Tabele \ref{tab:cmrg_asin} i \ref{tab:cmrg_lil} przedstawiają ich wyniki.
 
 \begin{table}[ht!]
 \centering
- \caption{Wyniki dla $\Sasin{n}$.}
+ \caption{Wyniki testowania generatora CMRG charakterystyką $\Sasin{n}$.}
  \label{tab:cmrg_asin}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.019 &  0.023 &  0.024 &  0.024 &  0.024 &  0.023 &  0.021 &  0.027 &  0.027\\ \hline
-  sep1 &  0.113 &  0.209 &  0.119 &  0.145 &   0.15 &  0.119 &  0.123 &  0.159 &  0.208\\ \hline
-  sep2 &   0.14 &  0.094 &  0.116 &  0.134 &  0.193 &  0.167 &  0.093 &  0.135 &  0.116\\ \hline
- p-val &  0.976 &  0.466 &  0.764 &  0.799 &  0.383 &  0.682 &  0.985 &  0.204 &  0.161\\ \hline
+     tv &  0.0191 &  0.0234 &  0.0235 &  0.0239 &  0.0232 &  0.0228 &  0.0218 &  0.0268 &  0.0272\\ \hline
+   sep1 &  0.1135 &   0.209 &  0.1187 &   0.145 &  0.1607 &  0.1191 &  0.1232 &  0.1592 &  0.2084\\ \hline
+   sep2 &  0.1402 &    0.09 &  0.1084 &  0.1477 &  0.1934 &  0.1666 &  0.0931 &  0.1353 &  0.1158\\ \hline
+  p-val &  0.9752 &  0.4101 &  0.8062 &  0.7402 &  0.4043 &  0.6841 &  0.9821 &  0.2394 &  0.1343\\ \hline
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testowania generatora CMRG charakterystyką $\Slil{n}$.}
+ \label{tab:cmrg_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+     tv &  0.0218 &  0.0241 &  0.0272 &  0.0203 &  0.0231 &  0.0251 &   0.033 &  0.0233 &  0.0234\\ \hline
+   sep1 &  0.2336 &  0.3273 &  0.1803 &  0.2551 &  0.3085 &   0.169 &  0.3146 &   0.331 &  0.2829\\ \hline
+   sep2 &   0.345 &  0.2105 &  0.1234 &  0.1032 &  0.1901 &  0.1658 &  0.2302 &  0.2486 &  0.1761\\ \hline
+  p-val &  0.6046 &  0.2689 &   0.203 &  0.8653 &  0.4581 &  0.3966 &  0.0128 &  0.4106 &  0.6803\\ \hline
+\end{tabular}  
+\end{table}
+\FloatBarrier
 
+  Na pierwszy rzut oka widać, że mamy tu do czynienia z generatorem o dłuższym okresie. Wyniki nie dają żadnych podstaw do odrzucenia hipotezy o losowości ciągów bitów. Trzeba tu jednak odnotować, że w \cite{kim-choe} przedstawiono silne dowody, że wyjście tego generatora nie jest dobre.
 
- 
+\FloatBarrier
+\subsection{Mersenne Twister}
+Generator Mersenne Twister został przetestowany przy użyciu implementacji dostępnej w języku C++11.
+
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki dla $\Sasin{n}$.}
+ \label{tab:twister_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+     tv &  0.0271 &  0.0245 &  0.0226 &  0.0281 &  0.0276 &  0.0228 &  0.0271 &   0.023 &  0.0255\\ \hline
+   sep1 &  0.1421 &  0.1606 &  0.1167 &  0.1824 &  0.1938 &  0.1571 &   0.176 &  0.1397 &  0.1573\\ \hline
+   sep2 &  0.1133 &  0.1195 &  0.1056 &  0.1399 &  0.1256 &  0.1287 &  0.1391 &  0.0994 &  0.1444\\ \hline
+  p-val &  0.2755 &  0.6823 &  0.8804 &  0.0801 &  0.1267 &  0.7343 &  0.1094 &  0.7596 &  0.2029\\ \hline
 \end{tabular}  
 \end{table}
 \begin{table}[ht!]
 \centering
  \caption{Wyniki dla $\Slil{n}$.}
- \label{tab:cmrg_lil}
+ \label{tab:twister_lil}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline 
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-    tv &  0.031 &  0.026 &   0.03 &  0.022 &  0.026 &  0.026 &  0.033 &  0.023 &  0.023\\ \hline
-  sep1 &  0.108 &  0.256 &  0.173 &  0.169 &   0.27 &  0.139 &  0.296 &  0.317 &  0.283\\ \hline
-  sep2 &  0.469 &  0.326 &  0.263 &  0.225 &  0.266 &  0.199 &  0.266 &  0.266 &  0.176\\ \hline
- p-val &    0.0 &  0.001 &  0.007 &  0.386 &  0.207 &  0.296 &  0.007 &  0.387 &  0.689\\ \hline
-
- 
+     tv &  0.0254 &  0.0264 &  0.0238 &  0.0234 &  0.0266 &  0.0265 &   0.029 &  0.0299 &  0.0215\\ \hline
+   sep1 &  0.1853 &  0.2147 &  0.1689 &  0.3093 &  0.1887 &  0.2015 &  0.2877 &  0.2318 &  0.1953\\ \hline
+   sep2 &  0.2841 &  0.1696 &  0.1917 &  0.1282 &  0.2017 &  0.2492 &  0.1842 &  0.1541 &  0.1716\\ \hline
+  p-val &  0.2483 &   0.369 &  0.5965 &  0.5066 &  0.2196 &  0.1495 &  0.0499 &  0.0189 &   0.817\\ \hline
 \end{tabular}  
 \end{table}
+
+
 \FloatBarrier
 \section{Podsumowanie}
-
+Testy oparte o własności błądzenia przypadkowego wydają się być dobrym uzupełnieniem standardowych pakietów testowych takich jak np. NIST Test Suite, zwłaszcza, że mają potencjał do wyłapywania problemów nieco innej natury.
 
 \begin{thebibliography}{99}
  \bibitem{asmussen}
@@ -1027,9 +1298,6 @@ Każdy GLP testowaliśmy wykorzystując go do wygenerowania $m = 10000$ ciągów
  \bibitem{wang-nic}
     Y. Wang, T. Nicol, \emph{On Statistical Distance Based Testing of Pseudo Random Sequences and Experiments with PHP and Debian OpenSSL}, Computers \& Security, 53, 44--64, 2015
 
-
- \bibitem{rorg}
-    www.random.org
 \end{thebibliography}
 
 
