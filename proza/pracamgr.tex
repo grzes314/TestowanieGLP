@@ -109,7 +109,7 @@ Instytut Matematyczny}\\
 \hspace*{6.5cm}dr. Pawła Lorka }\\
 \vfill
 \begin{center}
-{\large Wrocław, 30 sierpnia 2015}\\
+{\large Wrocław, 31 sierpnia 2015}\\
 \end{center}
 
 \newpage
@@ -131,17 +131,19 @@ Instytut Matematyczny}\\
 \addcontentsline{toc}{chapter}{\bfseries Wprowadzenie}
 Wiele współczesnych technologii opiera się na randomizacji. W informatyce losowość pojawia się na każdym kroku i często nie zdajemy sprawy jak bardzo jesteśmy od niej uzależnieni. Programiści korzystają z niej na co dzień, często zupełnie nieświadomie, na przykład używając bibliotecznych implementacji algorytmu quicksort lub tablic haszujących. Randomizacja jest niezbędnym elementem w wielu innych specjalistycznych dziedzinach. Przykładowo w finansach ważną rolę odgrywają metody Monte Carlo polegające na wielokrotnej symulacji rozwoju rynku. Metody optymalizacji oparte o metaheurystyki lub algorytmy ewolucyjne nie miałyby bez losowości racji bytu.
 
-Podane wyżej przykłady mają pewną wspólną cechę: drobne wady generatora liczb pseudolosowych (GLP), na których oparte są wspomniane metody, mogą obniżyć efektywność działania lub dokładność wyników, ale nie rujnują algorytmów całkowicie. Są jednak dziedziny, w których jakość GLP ma zasadnicze znaczenie. Dobrym przykładem jest kryptografia. Zauważalne odstępstwa od losowości mogą istotnie zwiększyć szanse złamania protokołu kryptograficznego, odkrycia klucza prywatnego, itp. Wynika stąd potrzeba zidentyfikowania tych GLP, na których można polegać.
+W podanych powyżej przykładach drobne wady generatora liczb pseudolosowych (GLP), na których oparte są wspomniane metody, mogą obniżyć efektywność działania lub dokładność wyników, ale nie rujnują algorytmów całkowicie. Są jednak dziedziny, w których jakość generatora ma zasadnicze znaczenie. Dobrym przykładem jest kryptografia. Zauważalne odstępstwa od losowości mogą istotnie zwiększyć szanse złamania protokołu kryptograficznego, odkrycia klucza prywatnego, itp. Wynika stąd potrzeba zidentyfikowania tych GLP, na których można polegać.
 
-Wyjście GLP jest po prostu ciągiem binarnych danych. Rozstrzygnięcie czy dany GLP jest wystarczająco solidny sprowadza się do odpowiedzi na pytanie czy jego wyjście jest nieodróżnialne od ciągu prawdziwie losowego. Interpretując wygenerowane bity jako +1 oraz -1, możemy łatwo zobaczyć, że wyjście GLP odpowiada realizacji błądzenia przypadkowego. Ten proces stochastyczny jest dobrze zbadany i opisany w literaturze (np. w \cite{feller}). Znamy wiele jego własności. Testowanie GLP polega na sprawdzeniu czy jego wyjście również je posiada.
+Początki analizy generatorów sięgają lat pięćdziesiątych. Już wtedy John von Neumann zauważył, że trudniej jest testować ciągi pseudolosowych liczb niż je produkować. Od tego czasu badacze nieustannie udoskonalają narzędzia służące testowaniu GLP. To zagadnienie poruszał już Donald Knuth w swoim dziele \emph{Sztuka programowania}. Zaproponował on kilka testów statystycznych traktujących liczby otrzymane z GLP jak zmienne losowe. Przy założeniu ich jednostajności i niezależności, pewne funkcje tych zmiennych powinny mieć znane rozkłady, co sprawdzamy np. testem chi-kwadrat. To podejście było następnie dalej rozwijane -- znane paczki testów opracowali George Marsaglia (w 1995), Pierre L’Ecuyer i Richard Simard (w 2007), a obecnie ważną rolę odgrywa zestaw rozwijany przez amerykańską agencję National Institute of Standards and Technology.
 
-W części \ref{czesc:bladzenie} opisujemy te własności błądzenia przypadkowego, które przydadzą się w dalszej części pracy. Autorzy \cite{wang-nic} zauważyli użyteczność prawa iterowanego logarytmu do testowania generatorów. W niniejszej pracy proponujemy metodę testowania generatorów opartą o prawo arcusa sinusa.
+W niniejszej pracy przedstawiamy nowe metody testowania GLP: test arcusa sinusa i test iterowanego logarytmu. Wymagają one traktowania wyjścia generatora jako strumienia binarnych danych. Rozstrzygnięcie czy dany GLP jest wystarczająco solidny sprowadza się do odpowiedzi na pytanie czy sekwencja otrzymana z GLP jest nieodróżnialna od ciągu prawdziwie losowego. Interpretując wygenerowane bity jako +1 oraz -1, możemy łatwo zobaczyć, że wyjście GLP odpowiada realizacji błądzenia przypadkowego. Ten proces stochastyczny jest dobrze zbadany i opisany w literaturze, stąd znamy wiele jego własności. Testowanie GLP polega na sprawdzeniu czy jego wyjście również je posiada.
 
-Część \ref{czesc:metoda} opisujemy dokładniej jak wykorzystać przytoczone prawa do testowania GLP. Postępujemy nieco inaczej niż w statystyce matematycznej, choć idea jest podobna. Uruchamiamy GLP $m$ razy (każdorazowo z innym ziarnem!). Na podstawie każdego ciągu zerojedynkowego otrzymanego z GLP (lub patrząc inaczej: na podstawie każdej realizacji błądzenia przypadkowego) obliczamy wartość pewnej funkcji. Znamy teoretyczny rozkład tej wartości i możemy obliczyć jego odległość od rozkładu otrzymanego empirycznie. Jeśli ta odległość jest duża, to możemy powiedzieć, że GLP jest niskiej jakości, w przeciwnym razie nie ma podstaw by go zdyskredytować.
+Opracowana metoda silnie polega na teoretycznych własnościach błądzenia przypadkowego, dlatego w części \ref{czesc:bladzenie} przedstawiamy niezbędne matematyczne podstawy. Przypominamy definicję błądzenia losowego oraz przytaczamy dwa kluczowe twierdzenia. Pierwsze z nich, prawo iterowanego logarytmu, oszacowuje wielkość odchyleń od zera jakich należy spodziewać się obserwując proces błądzenia. Drugie, prawo arcusa sinusa, mówi, że jest bardziej prawdopodobne, iż błądzenie przypadkowe zdecydowaną większość czasu spędzi nad osią OX, niż że rozkład czasu spędzony po obu stronach osi będzie w miarę równy.
 
-Wyniki testów kilku znanych GLP przedstawione są w części \ref{czesc:testy}
+Część \ref{czesc:generatory} poświęcona jest przybliżeniu obiektu naszego zainteresowania. Precyzujemy pojęcie generatora liczb pseudolosowych. Przedstawiamy kilka rodzajów GLP, np. generatory wykorzystujące kongruencje liniowe. GLP zwracają nam pseudolosowe liczby, a do testów arcusa sinusa i iterowanego logarytmu potrzebujemy pseudolosowych sekwencji bitów. Dlatego odnotowujemy kilka uwag dotyczących interpretowania wyjścia generatora jako ciągu zerojedynkowego. Następnie przywołujemy kilka popularnych metod testowania GLP.
 
-{\bigskip \color{red} \LARGE{TODO!} Rozdmuchać wstęp}
+W części \ref{czesc:metoda} opisujemy dokładniej jak wykorzystać przytoczone własności błądzenia przypadkowego do testowania GLP. Autorzy \cite{wang-nic} zauważyli użyteczność prawa iterowanego logarytmu do testowania generatorów. W niniejszej pracy proponujemy podobną metodę, opartą o prawo arcusa sinusa. Z grubsza rzecz biorąc, postępujemy tak jak w statystyce matematycznej, choć obserwacje są dość nietypowe, bo są nimi długie ciągi zerojedynkowe. Wykorzystujemy GLP, by otrzymać $m$ sekwencji bitów. Każdą z nich interpretujemy jako realizację błądzenia przypadkowego i na jej podstawie obliczamy pewną wartość, którą będziemy nazywać charakterystyką ciągu. W ten sposób dostajemy empiryczny rozkład tej charakterystyki. Natomiast dzięki twierdzeniom z części \ref{czesc:bladzenie} znamy jej rozkład teoretyczny. Wykonując test $\chi^2$ sprawdzamy zgodność tych rozkładów. Alternatywnie możemy skorzystać ze znanych funkcji odległości miar (rozkład prawdopodobieństwa nie jest niczym innym jak miarą zdefiniowaną na prostej rzeczywistej). Jeśli wartość statystyki testowej lub odległość miary teoretycznej i empirycznej jest duża, to możemy powiedzieć, że GLP niezbyt dobrze imituje losowość, w przeciwnym razie nie ma podstaw by go zdyskredytować.
+
+Metoda opisana w części \ref{czesc:metoda} została zaprogramowana w języku Julia. W części \ref{czesc:testy} przedstawiamy tę implementację. Omawiamy różne praktyczne aspekty, które wpłynęły na architekturę programu. Prezentujemy jak użyć wykonanego narzędzia do przetestowania własnych GLP. Następnie przedstawiamy wyniki testowania kilku stosowanych generatorów. Sprawdzamy jakość funkcji \texttt{rand} z języka C, w kilku popularnych środowiskach. Inne przetestowane generatory to RANDU, Minstd, CMRG oraz Mersenne Twister. Warto zwrócić uwagę również na ostatni przykład, wprawdzie nieco sztuczny, jednak obrazujący zaletę testów arcusa sinusa i iterowanego logarytmu w stosunku do podejścia stosowanego przykładowo przez NIST Test Suite.
 
 
 \chapter{Błądzenie przypadkowe}
@@ -170,7 +172,7 @@ Sporo miejsca w rachunku prawdopodobieństwa poświęcono badaniu własności b�
 
 
 \section{Prawo iterowanego logarytmu}
-Jest jasne, że $|S_n| \leq n$. Można się jednak domyślać, choćby na podstawie rysunku \ref{fig:bladzenie}, że duże wartości $|S_n|$ są jednak bardzo mało prawdopodobne i w praktyce z dużym prawdopodobieństwem wartości $S_n$ znajdą się w znacznie węższym przedziale niż $[-n, n]$. Słabe i mocne prawo wielkich liczb (SPWL i MPWL) mówią nam, że
+Jest jasne, że $|S_n| \leq n$. Można się jednak domyślać, choćby na podstawie Rysunku \ref{fig:bladzenie}, że duże wartości $|S_n|$ są jednak bardzo mało prawdopodobne i w praktyce z dużym prawdopodobieństwem wartości $S_n$ znajdą się w znacznie węższym przedziale niż $[-n, n]$. Słabe i mocne prawo wielkich liczb (SPWL i MPWL) mówią nam, że
 \[\frac{S_n}{n} \stackrel{\Prob}{\rightarrow} 0 \hbox{, a nawet } \frac{S_n}{n} \stackrel{p.n.}{\rightarrow} 0.\] Jest więc jasne, że odchylenia procesu $S$ od zera rosną znacznie wolniej niż liniowo. Z drugiej strony centralne twierdzenie graniczne (CTG) mówi nam, że $\frac{S_n}{\sqrt{n}} \stackrel{D}{\rightarrow} \norm{0}{1}$
 co jest w pewnym sensie oszacowaniem fluktuacji $S_n$ od dołu -- będą one wychodzić poza przedział $[-\sqrt{n}, \sqrt{n}]$, mamy bowiem
 \begin{fakt}
@@ -645,7 +647,7 @@ Metody opisane tutaj mają pewną zaletę w stosunku do przedstawionych wcześni
 \subsection*{Zestawy testów}
 Rozwinięciem podejścia z poprzedniego paragrafu jest tworzenie paczek testowych. Zawierają one kilkanaście lub więcej testów opartych o fakty rachunku prawdopodobieństwa, które powinien spełniać idealny ciąg losowych bitów. Znane przykłady to:
 \begin{itemize}
- \item \textbf{Diehard tests.} Zestaw opracowany przez George'a Marsaglia w 1996 r. Obecnie uważany już za przestarzały.
+ \item \textbf{Diehard tests.} Zestaw opracowany przez George'a Marsaglia w 1995 r. Obecnie uważany już za przestarzały.
  \item \textbf{TestU01.} Następca zestawu Diehard, który opracowali Pierre L’Ecuyer oraz Richard Simard w 2007 r.
  \item \textbf{NIST Test Suite.} Zestaw opracowany przez organizację \textit{National Institute of Standards and Technology} i ciągle rozwijany. 
 \end{itemize}
@@ -694,13 +696,13 @@ Przy założeniu hipotezy, o niezależności i rozkładzie jednostajnym zmiennyc
 \subsection*{Błądzenie przypadkowe}
 Testom opartym na własnościach błądzenia przypadkowego poświęcone są kolejne dwie części pracy.
 
-\chapter{Metoda testowania}
+\chapter{Metoda testowania oparta na błądzeniu przypadkowym}
 \label{czesc:metoda}
 W części \ref{czesc:bladzenie} przedstawiliśmy teorię przydatną do testowania GLP. W tej części pokazujemy jak zastosować ją w praktyce. Opisujemy w jaki sposób sprawdzać czy wygenerowane ciągi odpowiadają prawdziwie losowym realizacjom błądzenia przypadkowego. Przedstawiona tu metoda wykorzystująca prawo iterowanego logarytmu pochodzi z pracy \cite{wang-nic}. Dodatkowo proponujemy podobną metodę opartą o prawo arcusa sinusa. W wykonywanych obliczeniach często polegamy na aproksymacjach, dlatego w ostatnim paragrafie tej części analizujemy wielkość popełnianego błędu.
 
 
 
-\section{Zastosowanie błądzenia przypadkowego do testowania GLP}
+\section{Opis metody}
 
 Ogólna idea testów, które omawiamy w tej części pracy, nie jest skomplikowana. Metoda polega na obliczeniu pewnych charakterystyk ciągów wygenerowanych przez GLP i porównaniu ich empirycznych rozkładów z rozkładami, które są znane dla idealnego ciągu losowych bitów.
 
@@ -1172,7 +1174,7 @@ Przy $k$-tym wywołaniu generator zwraca $x_{k+343} \gg 1$.
 
 Do testów brane były wszystkie 31 bitów zwracanych przez GLP. Na podstawie wyników zebranych w Tabelach \ref{tab:mojkomp_asin} i \ref{tab:mojkomp_lil} można stwierdzić, że test arcusa sinusa nie daje podstaw do odrzucania hipotezy o losowości sekwencji generowanych przez analizowany GLP. W przypadku testu iterowanego logarytmu, rezultaty dla $n=2^{34}$ i $n=2^{33}$ również sugerowałyby, że GLP jest dobry. Jednakże dla $n=2^{32}$ obserwujemy coś dziwnego, mamy bardzo niską $p$-wartość wynoszącą około $1/1000$. Może to być kwestia przypadku -- z prawdopodobieństwem $1/1000$ zdarzyłoby się to nawet generatorowi liczb prawdziwie losowych. Popatrzmy jednak na $p$-wartości dla dziesięciu 1000-elementowych podzbiorów danych. Wynoszą one: $0.9313$, $0.0949$, $0.8859$, $0.1739$, $0.3675$, $0.0334$, $0.0321$, $0.1824$, $0.0017$, $0.6205$. Zauważmy, że aż 4 $p$-wartości są mniejsze niż $0.1$. W przypadku ciągów prawdziwie losowych zdarzenie, że 4 lub więcej otrzymanych $p$-wartości znajdzie się w tym przedziale wynosi
 \[ 1 - \sum_{i=0}^3 \binom{10}{i} \left(\frac{1}{10}\right)^{i} \left(1 - \frac{1}{10}\right)^{10-i} \approx 0.0016 \]
-To przemawia za tym, by generator z GLIBC również uznać za podejrzany.
+To przemawia za tym, by generator z GLIBC również uznać za podejrzany. Jednak mimo tego jest to wyraźnie najlepsza implementacja funkcji \texttt{rand}.
 
 \FloatBarrier
 \subsection{Minstd}
