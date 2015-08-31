@@ -109,7 +109,7 @@ Instytut Matematyczny}\\
 \hspace*{6.5cm}dr. Pawła Lorka }\\
 \vfill
 \begin{center}
-{\large Wrocław, 31 sierpnia 2015}\\
+{\large Wrocław 2015}\\
 \end{center}
 
 \newpage
@@ -225,7 +225,7 @@ Przyjrzyjmy się Rysunkowi \ref{fig:itlog}. Widać, że funkcja $\sqrt{2 n \log 
 Choć nie będzie przydatna w dalszej części pracy, jeszcze jedna ciekawa własność narzuca się by o niej wspomnieć. Niech $\Slil{n} = \frac{S_n}{\sqrt{2n \log \log n}}$. Z PIL wynika, że wielkość $\Slil{n}$ nie zbiega punktowo do żadnej stałej. Zachodzi natomiast zbieżność do 0 według prawdopodobieństwa. Ustalmy więc dowolnie małe $\varepsilon > 0$ i zastanówmy się jak często $\Slil{n}$ opuści epsilonowy pasek wokół zera. Możemy przyjąć $p < 1$ dowolnie bliskie jedności, a mimo to dla prawie wszystkich $n$ możemy powiedzieć, że z prawdopodobieństwem $p$ wielkość $\Slil{n}$ nie wyjdzie poza przedział $(-\varepsilon, \varepsilon)$. Tymczasem PIL równocześnie mówi nam, że ten epsilonowy pasek opuścimy nieskończenie wiele razy. Ta niesamowita, pozorna sprzeczność pokazuje jak bardzo nasza intuicja zawodzi, gdy myślimy o zjawiskach zachodzących w nieskończoności.
 
 \section{Prawo arcusa sinusa}
-\label{par:asin}
+\label{sec:asin}
 
 Kolejna własność błądzenia przypadkowego, którą postaramy się wykorzystać do testowania GLP jest znana jako prawo arcusa sinusa. Odpowiada ono na pytanie przez jaką frakcję czasu ustalony gracz będzie na prowadzeniu. Spodziewalibyśmy się, że w przypadku bardzo długiej gry, obaj gracze będą na prowadzeniu przez mniej więcej tyle samo czasu. Jednak pokażemy, że również w tym przypadku nasza intuicja płata nam figla.
 
@@ -716,11 +716,11 @@ Niech
 \begin{equation}
 D_k = \mathbbm{1}\left(S_k > 0 \vee S_{k-1}>0 \right), k=1,2,\ldots,n.
 \end{equation}
-Zmienna $D_k$ przyjmuje wartość 1, gdy w $k$-tym kroku błądzenia przypadkowego zachodzi przewaga liczby jedynek nad zerami (traktując remisy tak jak w paragrafie \ref{par:asin}), zaś 0 w przeciwnym przypadku. Zdefiniujmy charakterystykę $\Sasin{n}$ wzorem
+Zmienna $D_k$ przyjmuje wartość 1, gdy w $k$-tym kroku błądzenia przypadkowego zachodzi przewaga liczby jedynek nad zerami (traktując remisy tak jak w paragrafie \ref{sec:asin}), zaś 0 w przeciwnym przypadku. Zdefiniujmy charakterystykę $\Sasin{n}$ wzorem
 \begin{equation}
  \Sasin{n} = \frac{1}{n} \sum_{k=1}^n D_k.
 \end{equation}
-Zatem $\Sasin{n}$ jest to frakcja czasu podczas której jedynki dominowały nad zerami. Wiemy z paragrafu \ref{par:asin}, że
+Zatem $\Sasin{n}$ jest to frakcja czasu podczas której jedynki dominowały nad zerami. Wiemy z paragrafu \ref{sec:asin}, że
 \[ \Pro{\Sasin{n} = \frac{k}{n}} = p_{k,n}, \]
 zaś korzystając z prawa arcusa sinusa
 \begin{equation}
@@ -1178,35 +1178,68 @@ To przemawia za tym, by generator z GLIBC również uznać za podejrzany. Jednak
 
 \FloatBarrier
 \subsection{Minstd}
-Minstd jest to $MCG(2^{31}-1, 16807)$. Do generowania ciągów zerojedynkowych użyto bitów 15..8 zwracanych przez GLP. Tabele \ref{tab:minstd_asin} i \ref{tab:minstd_lil}, pokazują że nie jest to dobry GLP. 
+Minstd (skrót od ang. \textit{minimal standard generator}) jest to MCG z parametrami zasugerowanymi przez Parka i Millera. Ich celem było zaprojektowanie prostego generatora, który wprawdzie nie byłby doskonały, ale za to szybki, prosty w implementacji i nadający się do większości niespecjalistycznych zastosowań. W efekcie zaproponowali $MCG(2^{31}-1, 16807)$. Do generowania ciągów zerojedynkowych użyto ośmiu najbardziej znaczących bitów zwracanych przez GLP. Rezultaty testów pokazują Tabele \ref{tab:minstd_asin} i \ref{tab:minstd_lil}.
 
 \begin{table}[ht!]
 \centering
- \caption{Wyniki testu arcusa sinusa dla generatora Minstd.}
+ \caption{Wyniki testu arcusa sinusa dla generatora Minstd z mnożnikiem 16807.}
  \label{tab:minstd_asin}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-     tv &  0.0327 &  0.0335 &  0.0528 &  0.0719 &  0.0865 &  0.1044 &  0.1597 &  0.2021 &  0.2083\\ \hline
-   sep1 &  0.1514 &  0.1324 &   0.184 &  0.2413 &  0.2228 &   0.667 &  0.4911 &   0.708 &  0.8247\\ \hline
-   sep2 &  0.1753 &  0.1494 &  0.2649 &  0.3751 &  0.3998 &  0.3787 &  0.3673 &  0.5063 &  0.4246\\ \hline
-  p-val &  0.0056 &  0.0112 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000\\ \hline
+     tv &  0.0321 &  0.0321 &  0.0402 &  0.0725 &  0.0917 &  0.1116 &  0.1648 &  0.2003 &  0.2109\\ \hline
+   sep1 &  0.1172 &  0.1686 &  0.1407 &  0.2985 &  0.2880 &  0.6670 &  0.5203 &  0.7345 &  0.8486\\ \hline
+   sep2 &  0.1302 &  0.1490 &  0.2420 &  0.3986 &  0.4051 &  0.3735 &  0.3822 &  0.5352 &  0.3894\\ \hline
+  p-val &  0.0360 &  0.0203 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000\\ \hline
+
 \end{tabular}  
 \end{table}
 \begin{table}[ht!]
 \centering
- \caption{Wyniki testu iterowanego logarytmu dla generatora Minstd.}
+ \caption{Wyniki testu iterowanego logarytmu dla generatora Minstd z mnożnikiem 16807.}
  \label{tab:minstd_lil}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline 
      n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
-     tv &  0.0429 &  0.0623 &   0.086 &  0.1055 &  0.1856 &  0.2046 &  0.3543 &  0.3182 &    0.95\\ \hline
-   sep1 &  0.6128 &  0.5142 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000\\ \hline
-   sep2 &   0.147 &  0.2076 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000\\ \hline
+     tv &  0.0370 &  0.0622 &  0.0823 &  0.1120 &  0.1877 &  0.2002 &  0.3538 &  0.3194 &  0.9500\\ \hline
+   sep1 &  0.5035 &  0.5465 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000\\ \hline
+   sep2 &  0.1444 &  0.2366 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000\\ \hline
   p-val &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000\\ \hline
 \end{tabular}  
 \end{table}
 
+Kilka lat później później Park i Miller zasugerowali, że lepiej używać mnożnika $48271$. Czy zmiana mnożnika poprawiła wyniki testów widać w Tabelach \ref{tab:nminstd_asin} i \ref{tab:nminstd_lil}.
+
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testu arcusa sinusa dla generatora Minstd z mnożnikiem 48271.}
+ \label{tab:nminstd_asin}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+     tv &  0.0318 &  0.0430 &  0.0477 &  0.0982 &  0.1303 &  0.0918 &  0.0848 &  0.1131 &  0.2089\\ \hline
+   sep1 &  0.1607 &  0.1467 &  0.1901 &  0.3803 &  0.4280 &  0.3845 &  0.4583 &  0.3975 &  0.8079\\ \hline
+   sep2 &  0.1828 &  0.1719 &  0.2120 &  0.2548 &  0.3449 &  0.3179 &  0.3192 &  0.3186 &  0.4579\\ \hline
+  p-val &  0.0115 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000\\ \hline
+\end{tabular}  
+\end{table}
+\begin{table}[ht!]
+\centering
+ \caption{Wyniki testu iterowanego logarytmu dla generatora Minstd z mnożnikiem 48271.}
+ \label{tab:nminstd_lil}
+\begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
+ \hline 
+     n &  $2^{26}$ &  $2^{27}$ &  $2^{28}$ &  $2^{29}$ &  $2^{30}$ &  $2^{31}$ &  $2^{32}$ &  $2^{33}$ &  $2^{34}$\\ \hline
+     tv &  0.0372 &  0.0563 &  0.0590 &  0.2573 &  0.2879 &  0.3408 &  0.3167 &  0.3434 &  0.9500\\ \hline
+   sep1 &  0.3298 &  0.4839 &  0.9328 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000\\ \hline
+   sep2 &  0.3843 &  0.1850 &  0.2207 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000 &  1.0000\\ \hline
+  p-val &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000\\ \hline
+\end{tabular}  
+\end{table}
+
+W przypadku test arcusa sinusa odległość total variation poprawiła się po zmianie mnożnika. Jednak w teście iterowanego logarytmu wyszło dokładnie odwrotnie, trudno jest więc powiedzieć czy zmiana mnożnika wniosła istotną poprawę. W każdym razie test $\chi^2$ w obu przypadkach pokazuje, że Minstd to nie jest dobry generator.
+
+Mimo swoich niedoskonałości Minstd wszedł w zakres biblioteki standardowej C++11. Implementacjami są klasy \texttt{std::minstd\_rand0} (z mnożnikiem 16807) oraz \texttt{std::minstd\_rand} (z mnożnikiem 48271).
 
 
 \FloatBarrier
@@ -1257,7 +1290,7 @@ Generator Mersenne Twister został przetestowany przy użyciu implementacji dost
 
 \begin{table}[ht!]
 \centering
- \caption{Wyniki testu arcusa sinusa dla generatora MT19967.}
+ \caption{Wyniki testu arcusa sinusa dla generatora MT19967-64.}
  \label{tab:twister_asin}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline
@@ -1270,7 +1303,7 @@ Generator Mersenne Twister został przetestowany przy użyciu implementacji dost
 \end{table}
 \begin{table}[ht!]
 \centering
- \caption{Wyniki testu iterowanego logarytmu dla generatora MT19967}
+ \caption{Wyniki testu iterowanego logarytmu dla generatora MT19967-64.}
  \label{tab:twister_lil}
 \begin{tabular} {||c|c|c|c|c|c|c|c|c|c|c|c||}  
  \hline 
@@ -1286,6 +1319,7 @@ Wyniki zgromadzone w Tabelach \ref{tab:twister_asin} i \ref{tab:twister_lil} pok
 
 \FloatBarrier
 \subsection{Hipotetyczny, wadliwy generator}
+\label{subsec:zepsuty}
 Przedstawiając NIST Test Suite w paragrafie \ref{sec:pop_testy} wspomnieliśmy o pewnej jego wadzie, tkwiącej nieodłącznie w zastosowanym podejściu. Ten zestaw testowy skupia się jedynie na jakości poszczególnych sekwencji bitów otrzymanych z GLP, nie ocenia natomiast jakości zbioru wszystkich ciągów ,,jako całości''. Moglibyśmy mieć do czynienia z generatorem, który zazwyczaj generuje sekwencje doskonale imitujące idealny ciąg losowych bitów, ale z jakiegoś powodu, np. dla niektórych wartości ziaren, produkuje wyjście ewidentnie nielosowe. Ten wadliwy ciąg zapewne został by rozpoznany przez NIST Test Suite jako nielosowy, jednak nie przeważyłoby to do uznania całego generatora za zły.
 
 Żeby sprawdzić jak z taką sytuacją mogą radzić sobie testy iterowanego logarytmu i arcusa sinusa, przyjrzyjmy się następującemu eksperymentowi. Wykorzystamy generator, który
@@ -1306,7 +1340,7 @@ Rezultaty zebrane są w Tabelach \ref{tab:zep_asin} i \ref{tab:zep_lil}.
      tv &  0.0326 &  0.0241 &  0.0281 &  0.0285 &  0.0298 &  0.0339 &  0.0298 &  0.0285 &  0.0276\\ \hline
    sep1 &  0.1466 &  0.1754 &  0.1529 &  0.1124 &  0.1249 &  0.1752 &  0.1594 &  0.1666 &  0.1257\\ \hline
    sep2 &  0.3255 &   0.334 &   0.345 &  0.4212 &  0.3608 &  0.3582 &  0.3556 &  0.3925 &  0.3901\\ \hline
-  p-val &     0.0 &  0.0031 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0 &     0.0\\ \hline
+  p-val &  0.0000 &  0.0031 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000\\ \hline
 \end{tabular}  
 \end{table}
 \begin{table}[ht!]
@@ -1329,8 +1363,15 @@ Dlaczego w tym wypadku test iterowanego logarytmu się nie sprawdził? Błądzen
 Gdybyśmy jednak w powyższym eksperymencie wykorzystali $m = 100000$ ciągów, to również test iterowanego logarytmu zauważyłby zbyt duże odstępstwo. Wypływa stąd wniosek, że w celu wykrywania tego rodzaju wad generatorów lepiej postawić na liczbę ciągów, a nie na ich długość.
 
 \FloatBarrier
+\newpage
 \section{Podsumowanie}
-Testy oparte o własności błądzenia przypadkowego wydają się być dobrym uzupełnieniem standardowych pakietów testowych takich jak np. NIST Test Suite, zwłaszcza, że mają potencjał do wyłapywania problemów nieco innej natury.
+Przedstawiliśmy stosunkowo nowatorską metodę testowania GLP. Od standardowych metod różni się tym, że wyjście GLP traktuje jak ciąg bitów, a nie jako ciąg liczb. Daje to szerokie pole do wymyślania testów opartych na błądzeniu przypadkowym.
+
+Wyniki z poprzedniego paragrafu pokazują, że testy arcusa sinusa oraz iterowanego logarytmu dobrze wykrywają regularności w generatorach korzystających z kongruencji liniowych. Są jednak generatory, o których wiemy, że są wadliwe, a zaproponowana metoda tego nie wyłapuje, przykładem jest CMRG. Przedstawione testy, tak jak wszystkie inne testy statystyczne, biorą pod lupę tylko pewien aspekt analizowanego zagadnienia. Znalezienie odchyleń w tym aspekcie jest oczywiście dowodem wadliwości całego generatora, jednak pomyślny wynik testu mówi tak naprawdę tylko tyle, że ,,pod rozpatrywanym względem nie dopatrzono się nieprawidłowości''.
+
+Przedstawioną metodę trudno byłoby uznać za przełomową -- z pewnością nie jest ona uniwersalna, gdyż, jak zauważyliśmy powyżej, nie wykryjemy nią wszystkich możliwych usterek generatorów. Wydaje się jednak, że testy oparte na własnościach błądzenia przypadkowego byłyby dobrym uzupełnieniem standardowych pakietów testowych takich jak np. NIST Test Suite, zwłaszcza, że mają potencjał do wyłapywania problemów nieco innej natury, tak jak to wyjaśniliśmy w paragrafie \ref{subsec:zepsuty}.
+
+Z pewnością można wymyślić więcej testów działających na podobnej zasadzie jak test arcusa sinusa czy test iterowanego logarytmu. Warto pracować nad nowymi testami wyłapującymi międzybitowe zależności, które są niezauważane przez dotychczasowe metody. Przysłużyłoby się to utworzeniu szczelniejszej paczki testów. Jest to ciekawe zagadnienie, nad którym z pewnością opłaca się prowadzić dalsze badania.
 
 \begin{thebibliography}{99}
  \bibitem{asmussen}
