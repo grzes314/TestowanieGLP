@@ -1,0 +1,10 @@
+The thesis presents two state of the art tests of pseudorandom number generator (PRNG) quality. What distinguishes it from traditional methods is the treatment of PRNG's output as a stream of binary data. By this means the sequence obtained from a PRNG may be perceived as a random walk realization. The idea behind the test is to check whether the PRNG's output has the same properties as the true random walk. Y. Wang and T. Nicol noticed that the law of the iterated logarithm may be used to this end. Their method is presented in the thesis, as well as a similar test, based on the arcsine law.
+
+In the first and the second part, recalled are the definitions and theorems crucial for the thesis. Several kinds of PRNGs and popular ways of testing them are also presented.
+
+The third part contains the description of the new methods. Roughly speaking, they consist in calculating some characteristics of the bit sequences obtained from GLP. In case of the iterated logarithm test, the calculated characteristic tells about the magnitude of fluctuations of the random walk. In case of the arcsine test, it is the fraction of time when ones dominated zeros in the given sequence. By calculating this characteristic for many sequences its empirical distribution is obtained, whereas the theoretical distribution is known from the theorems of the probability theory. It is possible to check the goodness-of-fit of those distributions through the chi-square test. Alternatively, known measures of distribution distance, like total variation distance or separation distance, may be used. If the value of the test statistic or the distance is high, then it is justified to say that the PRNG is faulty.
+
+The last part concerns an implementation of the tests and their results. The project part of the thesis was performed in Julia language. The program architecture is discussed and it is shown how to use the created application to test any GLP. Collected are also test results of several widely used generators.
+
+
+

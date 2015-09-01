@@ -5,7 +5,7 @@ Przedstawiono też kilka rodzajów GLP i popularnych sposobów ich testowania.
 
 Część trzecia zawiera opis nowych metod. Ogólnie mówiąc, polegają one na obliczaniu pewnych charekterystyk ciągów bitów otrzymanych z GLP. W przypadku testu iterowanego logarytmu obliczana charakterystyka mówi o wielkości odchyleń błądzenia przypadkowego od zera, zaś w przypadku testu arcusa sinusa jest to frakcja czasu, podczas której jedynki dominowały nad zerami w rozważanej sekwencji. Obliczając tę charkterystykę dla wielu ciągów otrzymuje się jej empiryczny rozkład. Natomiast z twierdzeń rachunku prawdopodobieństwa znany jest jej rozkład teoretyczny. Używając testu chi-kwadrat możliwe jest rozstrzygnięcie zgodności obu rozkładów. Alternatywnie można zastosować znane funkcje odległości rozkładów, takie jak total variation distance lub separation distance. Jeśli wartość statystyki testowej lub odległość rozkładów jest duża, to można stwierdzić, że generator jest wadliwy.
 
-Ostatnia część dotyczny implementacji testów i ich wyników. Projektowa część pracy została wykonana w języku Julia. Omówiono architekturę programu i pokazano jak użyć wykonanego narzędzia do przetestowania dowolnego GLP. Zebrano również wyniki testów na kilku powszechnie używanych generatorach.
+Ostatnia część dotyczny implementacji testów i ich wyników. Projektowa część pracy została wykonana w języku Julia. Omówiono architekturę programu i pokazano jak użyć stworzone narzędzie do przetestowania dowolnego GLP. Zebrano również wyniki testów kilku powszechnie używanych generatorów.
 
 
 
